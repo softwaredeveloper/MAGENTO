@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<config>
+    <modules>
+        <Copernica_Integration>
+            <active>true</active>
+            <codePool>community</codePool>
+            <depends>
+                <Mage_Catalog/>
+                <Mage_Checkout/>
+                <Mage_Customer/>
+                <Mage_Newsletter/>
+                <Mage_Sales/>
+            </depends>
+        </Copernica_Integration>
+    </modules>
+</config>

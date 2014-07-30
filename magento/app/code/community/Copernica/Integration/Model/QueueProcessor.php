@@ -1,0 +1,233 @@
+<?php
+/**
+ *  Copernica Marketing Software
+ *
+ *  NOTICE OF LICENSE
+ *
+ *  This source file is subject to the Open Software License (OSL 3.0).
+ *  It is available through the world-wide-web at this URL:
+ *  http://opensource.org/licenses/osl-3.0.php
+ *  If you are unable to obtain a copy of the license through the
+ *  world-wide-web, please send an email to copernica@support.cream.nl
+ *  so we can send you a copy immediately.
+ *
+ *  DISCLAIMER
+ *
+ *  Do not edit or add to this file if you wish to upgrade this software
+ *  to newer versions in the future. If you wish to customize this module
+ *  for your needs please refer to http://www.magento.com/ for more
+ *  information.
+ *
+ *  @category       Copernica
+ *  @package        Copernica_Integration
+ *  @copyright      Copyright (c) 2011-2012 Copernica & Cream. (http://docs.cream.nl/)
+ *  @license        http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+ *  @documentation  public
+ */
+
+/**
+ *  This class will process task queue.
+ */
+class Copernica_Integration_Model_QueueProcessor
+{
+    /**
+     *  Number of processed tasks by this processor
+     *  @var int
+     */
+    private $processedTasks = 0;
+
+    /**
+     *  Lights-out time. After this moment the script
+     *  should stop synchronizing and wait for the
+     *  next cronjob to be started.
+     */
+    private $stopTime;
+
+    /**
+     *  How many items we want to process in one run?
+     *  @var int
+     */
+    private $itemsLimit = 10000000;
+
+    /**
+     *  For what is our timelimit for queue processing? in seconds.
+     *  @var int
+     */
+    private $timeLimit = 3075840000;
+
+    /**
+     *  The API connection to synchronize items
+     *  @var Copernica_Integration_Helper_Api
+     */
+    private $api = null;
+
+    /**
+     *  Constructor
+     */
+    public function __construct()
+    {
+        // get config into local scope
+        $config = Mage::helper('integration/config');
+
+        // check if we should limit how many items we can process in one run
+        if ($itemsLimit = $config->getItemsPerRun()) $this->itemsLimit = $itemsLimit;
+
+        // check if we should limit how much time we should spend on processing
+        if ($timeLimit = $config->getTimePerRun()) $this->timeLimit = $timeLimit;
+
+        // connect to the API
+        $this->api = Mage::helper('integration/api');
+    }
+
+    /**
+     *  We want to make some final actions when this processor is beeing destroyed.
+     */
+    public function __destruct()
+    {
+        // get config into local scope
+        $config = Mage::helper('integration/config');
+
+        // update the last start time
+        $config->setLastStartTimeCronjob(date("Y-m-d H:i:s"));
+
+        // set how many items we did process in last run
+        $config->setLastCronjobProcessedTasks($this->processedTasks);
+    }
+
+    /**
+     *  Process queue
+     */
+    public function processQueue()
+    {
+        // what is the setting for max execution time?
+        $maxExecutionTime = ini_get('max_execution_time');
+
+        /**
+         *  Set unlimited time for script execution. It does not matter that much
+         *  cause most time will be spent on database/curl calls and they do not
+         *  extend script execution time. We are setting this just to be sure that
+         *  script will not terminate in the middle of processing.
+         *  This is true for Linux machines. On windows machines it is super
+         *  important to set it to large value. Cause windows machines do use
+         *  real time to measure script execution time. When time limit is reached
+         *  it will terminate connection and will not gracefully come back to
+         *  script execution. Such situation will just leave mess in database.
+         */
+        set_time_limit(0);
+
+        // get queue items collection
+        $queue = Mage::getResourceModel('integration/queue_collection')->addDefaultOrder()->setPageSize(max($this->itemsLimit, 150));
+
+        // make some preparations before we start processing queue
+        $this->prepareProcessor();
+
+        // iterate over queue
+        foreach ($queue as $item)
+        {
+            // check if we did reach limit
+            if ($this->isLimitsReached()) break;
+
+            // check if did manage to process item
+            $this->processItem($item);
+        }
+
+        /**
+         *  Now, some explanation why we are doing such thing.
+         *  When we are processing tasks/events we are doing hell lot of
+         *  database/curl calls. They do not count into execution time cause cpu
+         *  is not spending time on script (it's halted). This is why we can not
+         *  rely on php time counter and that is why we are making our own check.
+         *  After we are done with processing, we will just reset time counter
+         *  for whole magento.
+         *  Note that this is true for Linux systems. On windows based machines
+         *  real time is used.
+         */
+        set_time_limit($maxExecutionTime);
+    }
+
+    /**
+     *  Make some preparations before we start processing queue
+     */
+    private function prepareProcessor()
+    {
+        // store time when we start
+        $this->stopTime = microtime(true) + $this->timeLimit;
+    }
+
+    /**
+     *  Check if we reached limits
+     *  @return bool
+     */
+    private function isLimitsReached()
+    {
+        // check if either we did reach maximum amount of items or we we processing too long
+        return $this->processedTasks > $this->itemsLimit || microtime(true) > $this->stopTime;
+    }
+
+    /**
+     *  Process a queue item
+     *
+     *  @param  Copernica_Integration_Model_Queue item to synchronize
+     */
+    private function processItem(Copernica_Integration_Model_Queue $item)
+    {
+        // retrieve the object to synchronize and the action to log
+        $object = $item->getObject();
+        $action = $item->getAction();
+
+        try
+        {
+            // what type of object are we synchronizing and what happened to it?
+            switch ("{$object->getResourceName()}/{$action}")
+            {
+                case 'sales/quote/store':               $this->api->storeQuote($object);        break;
+                case 'sales/quote_item/remove':         $this->api->removeQuoteItem($object);   break;
+                case 'sales/quote_item/store':          $this->api->storeQuoteItem($object);    break;
+                case 'sales/order/store':               $this->api->storeOrder($object);        break;
+                case 'newsletter/subscriber/store':     $this->api->storeSubscriber($object);   break;
+                case 'newsletter/subscriber/remove':    $this->api->removeSubscriber($object);  break;
+                case 'customer/customer/remove':        $this->api->removeCustomer($object);    break;
+                case 'customer/customer/store':         $this->api->storeCustomer($object);     break;
+            }
+
+            // increment processed tasks counter
+            $this->processedTasks++;
+
+            // delete the item from the queue
+            $item->delete();
+        }
+
+        /*
+         *  When we have a non copernica exception it means that we have little
+         *  controll over the reason why it happend. It could be numerous problems:
+         *  network failure, hard disk turning in fireball, magento stinky code.
+         *  Basically we can not determine what to do with it. We can tell
+         *  magento to log the exception and we just run with the queue as
+         *  we do usual.
+         */
+        catch (Exception $exception)
+        {
+            // tell magento to log exception
+            Mage::logException($exception);
+
+            // set result message on item and set result time
+            $item->setResult($exception->getMessage())->setResultTime(date('Y-m-d H:i:s'));
+        }
+    }
+
+    /**
+     *  Transfer queue item to error queue.
+     *  @param  Copernica_Integration_Queue
+     */
+    private function transferItemToErrorQueue($item)
+    {
+        // create error queue item
+        $errorItem = Copernica_Integration_ErrorQueue::createFromQueueItem($item);
+
+        // save error item
+        $errorItem->save();
+
+        // remove item
+        $item->delete();
+    }
+}

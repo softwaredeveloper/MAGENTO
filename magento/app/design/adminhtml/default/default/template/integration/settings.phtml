@@ -1,0 +1,153 @@
+<?php
+/**
+ *  View for Settings controller
+ *  Copernica Marketing Software
+ *  http://www.copernica.com
+ */
+
+// get config into local scope
+$_config = Mage::helper('integration/config');
+
+?>
+
+<script type="text/javascript">
+
+// on page load
+Event.observe(window, 'load', function() {
+
+    // when button is clicked we want to save information on server
+    $('synchronize_save').on('click', function(event) {
+        $('synchronize_form').submit();
+    });
+
+}, false);
+
+</script>
+
+<div class="content-header">
+    <h3 class="icon-head head-system-account">
+        Copernica Marketing Software : Settings
+    </h3>
+    <p class="form-buttons">
+        <button type="button" name="synchronize_save" id="synchronize_save">Save connection settings</button>
+    </p>
+</div>
+
+<form action="<?php echo $this->getPostUrl(); ?>" method="post" name="synchronize_form" id="synchronize_form">
+    <div class="entry-edit">
+        <?php echo $this->getBlockHtml('formkey'); ?>
+        <div class="entry-edit-head">
+            <h4 class="icon-head head-edit-form fieldset-legend">
+                Synchronization settings
+            </h4>
+        </div>
+
+        <div class="fieldset">
+                <div class="hor-scroll">
+                    <table cellspacing="0" class="form-list">
+                        <tbody>
+                            <tr>
+                                <td class="label">
+                                    Maximum items per run
+                                </td>
+                                <td class="value">
+                                    <input name="qs_max_items" id="qs_max_items" class="input-text" type="text" value="<?php echo $_config->getItemsPerRun(); ?>">
+                                </td>
+                                <td class="label">
+                                    Leave blank for unlimited
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="label">
+                                    Maximum time per run (in seconds)
+                                </td>
+                                <td class="value">
+                                    <input name="qs_max_time" id="qs_max_time" class="input-text" type="text" value="<?php echo $_config->getTimePerRun(); ?>">
+                                </td>
+                                <td class="label">
+                                    Leave blank for unlimited
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="label">Authorization</td>
+                                <td>
+                                    <?php
+                                        if (!$_config->getAccessToken())
+                                        {
+                                            ?>
+                                                Magento is not authorized with a Copernica account.<br>
+                                                <a href="<?= $this->getAuthorizeURI(); ?>">Authorize magento with a Copernica account</a>
+                                            <?php
+                                        }
+                                        else
+                                        {
+                                            ?>
+                                               Magento is authorized with a Copernica account.<br>
+                                                <a href="<?= $this->getAuthorizeURI(); ?>">Re-authorize to a different account</a>
+                                            <?php
+                                        }
+                                    ?>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="entry-edit">
+        <?php echo $this->getBlockHtml('formkey'); ?>
+        <div class="entry-edit-head">
+            <h4 class="icon-head head-edit-form fieldset-legend">
+                Stores settings
+            </h4>
+        </div>
+
+        <div class="fieldset">
+            <div class="hor-scroll">
+                <table cellspacing="0" class="form-list">
+                    <tbody>
+                        <tr>
+                            <td class="label">
+                                Stores to synchronize
+                            </td>
+                            <td class="value">
+                                <input type="radio" name="store-synchronize" id="store-synchronize-all" value="all"<?php if (is_null($_config->getEnabledStores())) { ?> checked <?php } ?>>
+                                <label for="store-synchronize-all">Synchronize all stores</label><br>
+
+                                <input type="radio" name="store-synchronize" id="store-synchronize-none" value="none"<?php if ($_config->getEnabledStores() === array()) { ?> checked <?php } ?>>
+                                <label for="store-synchronize-none">Disable synchronization</label><br>
+
+                                <input type="radio" name="store-synchronize" id="store-synchronize-some" value="some"<?php if ($_config->getEnabledStores()) { ?> checked <?php } ?>>
+                                <label for="store-synchronize-some">Synchronize some stores</label><br>
+
+                                <!-- @TODO: Add some CSS to only show the stores when the 'some' option is selected -->
+
+                                <br>
+                                <?php
+                                    foreach(Mage::app()->getWebsites() as $website){
+                                        foreach($website->getGroups() as $group){
+                                            foreach($group->getStores() as $store) {
+
+                                                $enabledStore = is_array($_config->getEnabledStores()) && in_array($store->getId(), $_config->getEnabledStores());
+
+                                                ?>
+                                                    <input type="checkbox" name="store[]" id="chk-store-<?= $store->getId(); ?>" value="<?= $store->getId(); ?>" <?php if ($enabledStore) { ?> checked="checked" <?php } ?>>
+                                                    <label for="chk-store-<?= $store->getId(); ?>">
+                                                        <?= $website->getName().' > '.$group->getName().' > '.$store->getName(); ?>
+                                                    </label>
+                                                    <br>
+                                                <?php
+                                            }
+                                        }
+                                    }
+                                ?>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</form>
