@@ -106,6 +106,7 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
             'shipping_cost'     =>  $quote->getShippingAmount(),
             'tax'               =>  $quote->getTaxAmount(),
             'ip_address'        =>  $quote->getRemoteIp(),
+            'last_modified'     =>  $quote->getUpdatedAt(),
         ));
     }
 
@@ -127,12 +128,17 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
      */
     public function storeQuoteItem(Mage_Sales_Model_Quote_item $item)
     {
+        // load the accompanying quote by id, since the getQuote method
+        // seems to be severely borken in some magento versions
+        $quote = Mage::getModel('sales/quote')->load($item->getQuoteId());
+
         // store the quote item
         $this->request->put("magento/quoteitem/{$item->getId()}", array(
             'quote'     =>  $item->getQuoteId(),
             'product'   =>  $item->getProductId(),
             'quantity'  =>  $item->getQty(),
             'price'     =>  $item->getPrice(),
+            'currency'  =>  $quote->getQuoteCurrencyCode(),
             'weight'    =>  $item->getWeight(),
         ));
     }
@@ -206,10 +212,10 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
     public function storeCustomer(Mage_Customer_Model_Customer $customer)
     {
         // determine the gender of the customer
-        $gender = Mage::getResourceSingleton('customer/customer')->getAttribute('gender')->getSource()->getOptionText($customer->getGender());
+        $gender = strtolower(Mage::getResourceSingleton('customer/customer')->getAttribute('gender')->getSource()->getOptionText($customer->getGender()));
 
         // if we do not get a gender something went wrong (or we don't know the gender)
-        if (empty($gender)) $gender = 'unknown';
+        if (empty($gender)) $gender = null;
 
         // store the customer
         $this->request->put("magento/customer/{$customer->getId()}", array(
