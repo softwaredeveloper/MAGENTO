@@ -76,11 +76,25 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
             'redirect_uri'  =>  $redirectUri
         ));
 
-        // check if we have proper access token
-        if (!empty($output['access_token'])) return $output['access_token'];
+        // check for a valid access tokne
+        if (empty($output['access_token'])) return false;
 
-        // return output from API
-        return false;
+        // update the access token in the request
+        $this->request->setAccessToken($output['access_token']);
+
+        // return the new access token
+        return $output['access_token'];
+    }
+
+    /**
+     *  Retrieve information about the account we are linked to
+     *
+     *  @return map an array with the properties 'id, 'name', 'description' and 'company'
+     */
+    public function account()
+    {
+        // retrieve information from the request
+        return $this->request->get('identity');
     }
 
     /**

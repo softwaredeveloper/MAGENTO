@@ -54,6 +54,19 @@ class Copernica_Integration_Helper_RESTRequest extends Mage_Core_Helper_Abstract
     }
 
     /**
+     *  Update the access token when we receive a new one
+     *
+     *  @param  string  new access token
+     */
+    public function setAccessToken($accessToken)
+    {
+        file_put_contents('/tmp/data', "Setting access token to {$accessToken}\n", FILE_APPEND);
+
+        // store the new access token
+        $this->accessToken = $accessToken;
+    }
+
+    /**
      *  Check request instance. This method will check all essentials to make an
      *  API call.
      *  @return bool

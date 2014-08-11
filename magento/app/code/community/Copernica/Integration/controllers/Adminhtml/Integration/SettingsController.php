@@ -83,8 +83,16 @@ class Copernica_Integration_Adminhtml_integration_SettingsController extends Cop
             return $this->_redirect('*/*', array('response' => 'authorize-error'));
         }
 
-        // store access token inside config
-        Mage::helper('integration/config')->setAccessToken($accessToken);
+        // get the config helper and update the access token
+        $config = Mage::helper('integration/config');
+        $config->setAccessToken($accessToken);
+
+        // retrieve account info
+        $info = Mage::helper('integration/api')->account();
+
+        // store account info inside config
+        $config->setAccountName($info['name']);
+        $config->setCompanyName($info['company']);
 
         // return this
         return $this->_redirect('*/*', array('response' => 'new-access-token'));

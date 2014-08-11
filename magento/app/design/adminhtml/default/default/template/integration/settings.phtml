@@ -82,7 +82,7 @@ Event.observe(window, 'load', function() {
                                         else
                                         {
                                             ?>
-                                               Magento is authorized with a Copernica account.<br>
+                                               Magento is authorized to account '<?= $_config->getAccountName(); ?>'.<br>
                                                 <a href="<?= $this->getAuthorizeURI(); ?>">Re-authorize to a different account</a>
                                             <?php
                                         }
