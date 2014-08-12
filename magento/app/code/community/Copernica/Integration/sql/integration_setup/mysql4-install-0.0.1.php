@@ -33,8 +33,9 @@ $installer->run("
 DROP TABLE IF EXISTS `{$installer->getTable('integration/queue')}`;
 CREATE TABLE `{$installer->getTable('integration/queue')}` (
     `id` int(10) unsigned NOT NULL auto_increment,
-    `object` text NOT NULL,
-    `action` enum('add', 'remove', 'modify','full', 'start_sync') NOT NULL DEFAULT 'modify',
+    `entity_model` varchar(128) NOT NULL,
+    `entity_id` int unsigned NOT NULL,
+    `action` enum('store', 'remove', 'start_sync') NOT NULL DEFAULT 'store',
     `queue_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `result` text NULL,
     `result_time` timestamp NULL,
