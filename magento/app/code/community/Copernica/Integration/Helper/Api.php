@@ -186,6 +186,24 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
     }
 
     /**
+     *  Register an order item with copernica
+     *
+     *  @param  Mage_Sales_Model_Order_item the item that was created or modified
+     */
+    public function storeOrderItem(Mage_Sales_Model_Order_Item $item)
+    {
+        // store the order item
+        $this->request->put("magento/orderitem/{$item->getId()}", array(
+            'order'     =>  $item->getOrderId(),
+            'product'   =>  $item->getProductId(),
+            'quantity'  =>  $item->getQty(),
+            'price'     =>  $item->getPrice(),
+            'currency'  =>  $item->getOrder()->getOrderCurrencyCode(),
+            'weight'    =>  $item->getWeight(),
+        ));
+    }
+
+    /**
      *  Register a newsletter subscriber with copernica
      *
      *  @param  Mage_Newsletter_Model_Subscriber    the subscriber that was added or modified
@@ -253,5 +271,30 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
     {
         // remove the customer
         $this->request->delete("magento/customer/{$customer->getId()}");
+    }
+
+    /**
+     *  Store an address in copernica
+     *
+     *  @param  Mage_Customer_Model_Address the address that was added or modified
+     */
+    public function storeAddress(Mage_Customer_Model_Address $address)
+    {
+        // retrieve the customer this address belongs to
+        $customer = $address->getCustomer();
+
+        // store the address
+        $this->request->put("magento/address/{$address->getId()}", array(
+            'billingAddress'    =>  $customer->getData('default_billing') == $address->getId(),
+            'deliveryAddress'   =>  $customer->getData('default_shipping') == $address->getid(),
+            'country'           =>  (string)$address->getCountry(),
+            'street'            =>  (string)$address->getStreetFull(),
+            'city'              =>  (string)$address->getCity(),
+            'zipcode'           =>  (string)$address->getPostcode(),
+            'state'             =>  (string)$address->getRegion(),
+            'phone'             =>  (string)$address->getTelephone(),
+            'fax'               =>  (string)$address->getFax(),
+            'company'           =>  (string)$address->getCompany(),
+        ));
     }
 }

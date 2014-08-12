@@ -188,6 +188,7 @@ class Copernica_Integration_Model_QueueProcessor
                 case 'newsletter/subscriber/remove':    $this->api->removeSubscriber($object);  break;
                 case 'customer/customer/remove':        $this->api->removeCustomer($object);    break;
                 case 'customer/customer/store':         $this->api->storeCustomer($object);     break;
+                case 'customer/address/store':          $this->api->storeAddress($object);      break;
             }
 
             // increment processed tasks counter
@@ -199,7 +200,7 @@ class Copernica_Integration_Model_QueueProcessor
 
         /*
          *  When we have a non copernica exception it means that we have little
-         *  controll over the reason why it happend. It could be numerous problems:
+         *  control over the reason why it happened. It could be numerous problems:
          *  network failure, hard disk turning in fireball, magento stinky code.
          *  Basically we can not determine what to do with it. We can tell
          *  magento to log the exception and we just run with the queue as

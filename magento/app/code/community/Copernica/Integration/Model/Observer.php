@@ -154,16 +154,6 @@ class Copernica_Integration_Model_Observer
         if ($item = $observer->getEvent()->getItem())
         {
             /**
-             *  An event is triggered every time the object is saved, even when nothing has changed
-             *  for example, when an item is added to the quote.
-             *
-             *  However, the update date may have changed (even by 1 second)
-             *  which will trigger a new queue item any way. Even so, we do
-             *  prevent at least some unnecessary synchronisations this way.
-             */
-            if (!$item->hasDataChanges()) return;
-
-            /**
              *  If this quote item has a parent, an update event will be
              *  triggered for this parent item and we need not synchronize
              *  this quote item now to avoid unnecessary communication
@@ -203,6 +193,31 @@ class Copernica_Integration_Model_Observer
 
             // add the order to the synchronize queue
             $this->synchronize($order);
+        }
+    }
+
+    /**
+     *  Method for the following events:
+     *
+     *  'sales_order_item_save_after':
+     *
+     *  This method is fired when an order item is added or modified
+     *
+     *  @param  Varien_Event_Observer   observer object
+     */
+    public function orderItemModified(Varien_Event_Observer $observer)
+    {
+        // if the plug-in is not enabled, skip this
+        if (!$this->enabled() || !$this->isValidStore()) return;
+
+        // do we have a valid item?
+        if ($item = $observer->getEvent()->getItem())
+        {
+            // do we have a valid customer with the order?
+            if (!$item->getOrder()->getCustomerId()) return;
+
+            // add the item to the synchronize queue
+            $this->synchronize($item);
         }
     }
 
@@ -284,7 +299,7 @@ class Copernica_Integration_Model_Observer
         if ($customer = $observer->getEvent()->getCustomer())
         {
             // we only care if this is a valid customer
-            if ($customer->getId()) return;
+            if (!$customer->getId()) return;
 
             // add this customer to the synchronize queue
             $this->synchronize($customer);
@@ -309,10 +324,36 @@ class Copernica_Integration_Model_Observer
         if ($customer = $observer->getEvent()->getCustomer())
         {
             // we only care if this is a valid customer
-            if ($customer->getId()) return;
+            if (!$customer->getId()) return;
 
             // add this customer to the synchronize queue
             $this->synchronize($customer);
+        }
+    }
+
+    /**
+     *  Method for the following events:
+     *
+     *  'customer_address_save_after'.
+     *
+     *  This method is triggered when a customer updates one of
+     *  his or her addresses
+     *
+     *  @param  Varien_Event_Observer   observer object
+     */
+    public function addressModified(Varien_Event_Observer $observer)
+    {
+        // if the plug-in is not enabled, skip this
+        if (!$this->enabled() || !$this->isValidStore()) return;
+
+        // do we have a valid address?
+        if ($address = $observer->getEvent()->getCustomerAddress())
+        {
+            // we only care about valid addresses belonging to valid customer
+            if (!$address->getId() || !$address->getCustomerId()) return;
+
+            // add this customer to the synchronize queue
+            $this->synchronize($address);
         }
     }
 

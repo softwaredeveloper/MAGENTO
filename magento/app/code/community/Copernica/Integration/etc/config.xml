@@ -67,6 +67,14 @@
                     </integration_observer>
                 </observers>
             </sales_order_place_after>
+            <sales_order_item_save_after>
+                <observers>
+                    <integration_observer>
+                        <class>integration/observer</class>
+                        <method>orderItemModified</method>
+                    </integration_observer>
+                </observers>
+            </sales_order_item_save_after>
             <newsletter_subscriber_delete_before>
                 <observers>
                     <integration_observer>
@@ -99,6 +107,14 @@
                     </integration_observer>
                 </observers>
             </customer_save_after>
+            <customer_address_save_after>
+                <observers>
+                    <integration_observer>
+                        <class>integration/observer</class>
+                        <method>addressModified</method>
+                    </integration_observer>
+                </observers>
+            </customer_address_save_after>
             <catalog_controller_product_view>
                 <observers>
                     <integration_observer>
