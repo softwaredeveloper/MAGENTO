@@ -174,6 +174,8 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
             'customer'          =>  $order->getCustomerId(),
             'shipping_address'  =>  is_null($shippingAddress)   ? null : $shippingAddress->getId(),
             'billing_address'   =>  is_null($billingAddress)    ? null : $billingAddress->getId(),
+            'state'             =>  $order->getState(),
+            'status'            =>  $order->getStatus(),
             'weight'            =>  $order->getWeight(),
             'quantity'          =>  $order->getTotalQtyOrdered(),
             'currency'          =>  $order->getOrderCurrencyCode(),
