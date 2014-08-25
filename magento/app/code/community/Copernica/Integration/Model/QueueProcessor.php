@@ -180,6 +180,7 @@ class Copernica_Integration_Model_QueueProcessor
             // what type of object are we synchronizing and what happened to it?
             switch ("{$object->getResourceName()}/{$action}")
             {
+                case 'catalog/product/store':           $this->api->storeProduct($object);      break;
                 case 'sales/quote/store':               $this->api->storeQuote($object);        break;
                 case 'sales/quote_item/remove':         $this->api->removeQuoteItem($object);   break;
                 case 'sales/quote_item/store':          $this->api->storeQuoteItem($object);    break;

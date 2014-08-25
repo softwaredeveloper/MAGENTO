@@ -115,6 +115,14 @@
                     </integration_observer>
                 </observers>
             </customer_address_save_after>
+            <catalog_product_save_after>
+                <observers>
+                    <integration_observer>
+                        <class>integration/observer</class>
+                        <method>productModified</method>
+                    </integration_observer>
+                </observers>
+            </catalog_product_save_after>
             <catalog_controller_product_view>
                 <observers>
                     <integration_observer>

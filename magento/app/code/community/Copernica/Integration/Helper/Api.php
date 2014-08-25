@@ -98,6 +98,26 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
     }
 
     /**
+     *  Register a product with copernica
+     *
+     *  @param  Mage_Catalog_Model_Product  the product that was added or modified
+     */
+    public function storeProduct(Mage_Catalog_Model_Product $product)
+    {
+        // store the product
+        $this->request->put("magento/product/{$product->getId()}", array(
+            'sku'           =>  $product->getSku(),
+            'name'          =>  $product->getName(),
+            'description'   =>  $product->getDescription(),
+            'price'         =>  $product->getPrice(),
+            'weight'        =>  $product->getWeight(),
+            'modified'      =>  $product->getUpdatedAt(),
+            'uri'           =>  $product->getProductUrl(),
+            'image'         =>  $product->getImageUrl(),
+        ));
+    }
+
+    /**
      *  Register a quote with copernica
      *
      *  @param  Mage_Sales_Model_Quote  the quote that was created or modified

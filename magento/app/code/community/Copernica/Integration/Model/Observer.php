@@ -360,6 +360,31 @@ class Copernica_Integration_Model_Observer
     /**
      *  Method for the following events:
      *
+     *  'catalog_product_save_after'
+     *
+     *  This method is triggered when a product is created or updated
+     *
+     *  @param  Varien_Event_Observer   observer object
+     */
+    public function productModified(Varien_Event_Observer $observer)
+    {
+        // if the plug-in is not enabled, skip this
+        if (!$this->enabled() || !$this->isValidStore()) return;
+
+        // do we have a valid product
+        if ($product = $observer->getEvent()->getProduct())
+        {
+            // we only care about valid products
+            if (!$product->getId()) return;
+
+            // add this product to the synchronize queue
+            $this->synchronize($product);
+        }
+    }
+
+    /**
+     *  Method for the following events:
+     *
      *  'catalog_controller_product_view'
      *
      *  This method is triggered when a customer views a product
