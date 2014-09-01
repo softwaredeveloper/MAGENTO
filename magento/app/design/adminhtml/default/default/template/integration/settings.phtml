@@ -47,28 +47,6 @@ Event.observe(window, 'load', function() {
                     <table cellspacing="0" class="form-list">
                         <tbody>
                             <tr>
-                                <td class="label">
-                                    Maximum items per run
-                                </td>
-                                <td class="value">
-                                    <input name="qs_max_items" id="qs_max_items" class="input-text" type="text" value="<?php echo $_config->getItemsPerRun(); ?>">
-                                </td>
-                                <td class="label">
-                                    Leave blank for unlimited
-                                </td>
-                            </tr>
-                            <tr>
-                                <td class="label">
-                                    Maximum time per run (in seconds)
-                                </td>
-                                <td class="value">
-                                    <input name="qs_max_time" id="qs_max_time" class="input-text" type="text" value="<?php echo $_config->getTimePerRun(); ?>">
-                                </td>
-                                <td class="label">
-                                    Leave blank for unlimited
-                                </td>
-                            </tr>
-                            <tr>
                                 <td class="label">Authorization</td>
                                 <td>
                                     <?php

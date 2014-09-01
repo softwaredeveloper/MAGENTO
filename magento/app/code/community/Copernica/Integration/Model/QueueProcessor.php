@@ -47,13 +47,13 @@ class Copernica_Integration_Model_QueueProcessor
      *  How many items we want to process in one run?
      *  @var int
      */
-    private $itemsLimit = 10000000;
+    private $itemsLimit = 10000;
 
     /**
      *  For what is our timelimit for queue processing? in seconds.
      *  @var int
      */
-    private $timeLimit = 3075840000;
+    private $timeLimit = 275;
 
     /**
      *  The API connection to synchronize items
@@ -68,12 +68,6 @@ class Copernica_Integration_Model_QueueProcessor
     {
         // get config into local scope
         $config = Mage::helper('integration/config');
-
-        // check if we should limit how many items we can process in one run
-        if ($itemsLimit = $config->getItemsPerRun()) $this->itemsLimit = $itemsLimit;
-
-        // check if we should limit how much time we should spend on processing
-        if ($timeLimit = $config->getTimePerRun()) $this->timeLimit = $timeLimit;
 
         // connect to the API
         $this->api = Mage::helper('integration/api');

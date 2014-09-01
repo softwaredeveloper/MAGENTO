@@ -119,10 +119,6 @@ class Copernica_Integration_Adminhtml_integration_SettingsController extends Cop
             case 'some':    $config->setEnabledStores((array)$post['store']);   break;
         }
 
-        // store queue configuration
-        $config->setTimePerRun($post['qs_max_time']);
-        $config->setItemsPerRun($post['qs_max_items']);
-
         // redirect to same page
         return $this->_redirect('*/*');
     }
