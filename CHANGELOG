@@ -1,3 +1,12 @@
+dev
+~~~
+[#9117] Removed product controller and unsubscribe controller since they don't work
+[#9117] Fixed synchronization of most of the models.
+[#9177] Cleaned and improved existing code.
+[#9117] start_sync taks will be processed.
+[#9117] Stores filter will show up only when 'some' option is checked.
+[#9117] Fixed Config model.
+
 14.32 [2014-08-06]
 ~~~
 [#8906] Initial release

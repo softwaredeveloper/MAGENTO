@@ -17,9 +17,9 @@
                     <queue>
                         <table>copernica_queue</table>
                     </queue>
-                    <config_data>
-                        <table>copernica_config_data</table>
-                    </config_data>
+                    <config>
+                        <table>copernica_config</table>
+                    </config>
                     <errorqueue>
                         <table>copernica_error_queue</table>
                     </errorqueue>
@@ -132,36 +132,36 @@
                 </observers>
             </catalog_controller_product_view>
         </events>
-            <resources>
-                <integration_setup>
-                    <setup>
-                        <module>Copernica_Integration</module>
-                    </setup>
-                    <connection>
-                        <use>core_setup</use>
-                    </connection>
-                </integration_setup>
-                <integration_write>
-                    <connection>
-                        <use>core_write</use>
-                    </connection>
-                </integration_write>
-                <integration_read>
-                    <connection>
-                        <use>core_read</use>
-                    </connection>
-                </integration_read>
-            </resources>
-            <blocks>
-                <integration>
-                    <class>Copernica_Integration_Block</class>
-                </integration>
-            </blocks>
-            <helpers>
-                <integration>
-                    <class>Copernica_Integration_Helper</class>
-                </integration>
-            </helpers>
+        <resources>
+            <integration_setup>
+                <setup>
+                    <module>Copernica_Integration</module>
+                </setup>
+                <connection>
+                    <use>core_setup</use>
+                </connection>
+            </integration_setup>
+            <integration_write>
+                <connection>
+                    <use>core_write</use>
+                </connection>
+            </integration_write>
+            <integration_read>
+                <connection>
+                    <use>core_read</use>
+                </connection>
+            </integration_read>
+        </resources>
+        <blocks>
+            <integration>
+                <class>Copernica_Integration_Block</class>
+            </integration>
+        </blocks>
+        <helpers>
+            <integration>
+                <class>Copernica_Integration_Helper</class>
+            </integration>
+        </helpers>
     </global>
     <frontend>
         <routers>
@@ -189,7 +189,7 @@
         <jobs>
             <integration_process_queue>
                 <schedule><cron_expr>*/5 * * * *</cron_expr></schedule>
-                <run><model>integration/observer::processQueue</model></run>
+                <run><model>integration/QueueProcessor::processQueue</model></run>
             </integration_process_queue>
         </jobs>
     </crontab>

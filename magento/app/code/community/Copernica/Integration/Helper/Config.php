@@ -33,12 +33,6 @@
 class Copernica_Integration_Helper_Config extends Mage_Core_Helper_Abstract
 {
     /**
-     *  Define a prefix used for the config
-     *  @name CONFIG_BASE   a prefix
-     */
-    const CONFIG_BASE = 'integration/';
-
-    /**
      * Holds a list of previously requested key names
      * @var array
      */
@@ -217,21 +211,6 @@ class Copernica_Integration_Helper_Config extends Mage_Core_Helper_Abstract
 
         // Store the value in the custom config
         $this->_setCustomConfig($name, $value);
-
-        // some config items are not that interesting
-        if (in_array($name, array(
-            'customer_progress_status',
-            'order_progress_status',
-            'subscription_progress_status',
-            'cronjob_starttime',
-            'cronjob_endtime',
-            'cronjob_processedtasks',
-        ))) return;
-
-        // We have to reset the progress status
-        $this->setCustomerProgressStatus('0');
-        $this->setOrderProgressStatus('0');
-        $this->setSubscriptionProgressStatus('0');
     }
 
     /**
@@ -270,75 +249,6 @@ class Copernica_Integration_Helper_Config extends Mage_Core_Helper_Abstract
     public function getEnabledStores()
     {
         return unserialize($this->_getConfig('enabled_stores'));
-    }
-
-    /**
-     *  Get the progress status for customers
-     *  This is the created timestamp of the most recent customer which has
-     *  been queued for synchronisation
-     *  @return datetime
-     */
-    public function getCustomerProgressStatus()
-    {
-        return $this->_getConfig('customer_progress_status');
-    }
-
-    /**
-     *  Set the progress status for customers
-     *  This is the created timestamp of the most recent customer which has
-     *  been queued for synchronisation
-     *  @param datetime
-     */
-    public function setCustomerProgressStatus($value)
-    {
-        $this->_setConfig('customer_progress_status', $value);
-        return $this;
-    }
-
-    /**
-     *  Get the progress status for orders
-     *  This is the created timestamp of the most recent order which has
-     *  been queued for synchronisation
-     *  @return datetime
-     */
-    public function getOrderProgressStatus()
-    {
-        return $this->_getConfig('order_progress_status');
-    }
-
-    /**
-     *  Set the progress status for orders
-     *  This is the created timestamp of the most recent order which has
-     *  been queued for synchronisation
-     *  @param datetime
-     */
-    public function setOrderProgressStatus($value)
-    {
-        $this->_setConfig('order_progress_status', $value);
-        return $this;
-    }
-
-    /**
-     *  Get the progress status for subscriptions
-     *  This is the created timestamp of the most recent subscription which has
-     *  been queued for synchronisation
-     *  @return datetime
-     */
-    public function getSubscriptionProgressStatus()
-    {
-        return $this->_getConfig('subscription_progress_status');
-    }
-
-    /**
-     *  Set the progress status for subscriptions
-     *  This is the created timestamp of the most recent subscription which has
-     *  been queued for synchronisation
-     *  @param datetime
-     */
-    public function setSubscriptionProgressStatus($value)
-    {
-        $this->_setConfig('subscription_progress_status', $value);
-        return $this;
     }
 
     /**

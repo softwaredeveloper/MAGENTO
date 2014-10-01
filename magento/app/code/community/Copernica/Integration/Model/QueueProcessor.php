@@ -27,6 +27,8 @@
 
 /**
  *  This class will process task queue.
+ *
+ *  @todo refactor this class.
  */
 class Copernica_Integration_Model_QueueProcessor
 {
@@ -69,6 +71,9 @@ class Copernica_Integration_Model_QueueProcessor
         // get config into local scope
         $config = Mage::helper('integration/config');
 
+        // update the last start time
+        $config->setLastStartTimeCronjob(date("Y-m-d H:i:s"));
+
         // connect to the API
         $this->api = Mage::helper('integration/api');
     }
@@ -82,7 +87,7 @@ class Copernica_Integration_Model_QueueProcessor
         $config = Mage::helper('integration/config');
 
         // update the last start time
-        $config->setLastStartTimeCronjob(date("Y-m-d H:i:s"));
+        $config->setLastEndTimeCronjob(date("Y-m-d H:i:s"));
 
         // set how many items we did process in last run
         $config->setLastCronjobProcessedTasks($this->processedTasks);
@@ -168,11 +173,12 @@ class Copernica_Integration_Model_QueueProcessor
         // retrieve the object to synchronize and the action to log
         $object = $item->getObject();
         $action = $item->getAction();
+        $resourceName = !is_null($object) ? $object->getResourceName() : '';
 
         try
         {
             // what type of object are we synchronizing and what happened to it?
-            switch ("{$object->getResourceName()}/{$action}")
+            switch ("{$resourceName}/{$action}")
             {
                 case 'catalog/product/store':           $this->api->storeProduct($object);      break;
                 case 'sales/quote/store':               $this->api->storeQuote($object);        break;
@@ -184,6 +190,19 @@ class Copernica_Integration_Model_QueueProcessor
                 case 'customer/customer/remove':        $this->api->removeCustomer($object);    break;
                 case 'customer/customer/store':         $this->api->storeCustomer($object);     break;
                 case 'customer/address/store':          $this->api->storeAddress($object);      break;
+
+                // Start sync is a more complicated task to process.
+                case '/start_sync':
+                    // create sync processor that will process more items at once
+                    $syncProcessor = Mage::getModel('integration/SyncProcessor');
+                    $syncProcessor->process();
+
+                    // if sync processor was not complete we should respaws task on queue
+                    if (!$syncProcessor->isComplete()) 
+                        Mage::getModel('integration/queue')->setAction('start_sync')->save();
+
+                    // we are done here
+                    break;
             }
 
             // increment processed tasks counter
@@ -193,14 +212,7 @@ class Copernica_Integration_Model_QueueProcessor
             $item->delete();
         }
 
-        /*
-         *  When we have a non copernica exception it means that we have little
-         *  control over the reason why it happened. It could be numerous problems:
-         *  network failure, hard disk turning in fireball, magento stinky code.
-         *  Basically we can not determine what to do with it. We can tell
-         *  magento to log the exception and we just run with the queue as
-         *  we do usual.
-         */
+        // catch all exceptions
         catch (Exception $exception)
         {
             // tell magento to log exception
@@ -214,6 +226,7 @@ class Copernica_Integration_Model_QueueProcessor
     /**
      *  Transfer queue item to error queue.
      *  @param  Copernica_Integration_Queue
+     *  @todo   do we really need this?
      */
     private function transferItemToErrorQueue($item)
     {

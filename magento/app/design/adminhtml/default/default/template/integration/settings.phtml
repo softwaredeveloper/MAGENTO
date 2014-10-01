@@ -20,6 +20,17 @@ Event.observe(window, 'load', function() {
         $('synchronize_form').submit();
     });
 
+    // when user want to sync only some of the store we want to show him list of
+    // stores to filter
+    $('stores-to-sync').on('change', function (event) {
+        // we want to change only when proper radio is clicked
+        if (!event.target.name || event.target.name != 'store-synchronize') return;
+
+        // when 'some' radio is clicked we can show stores filter
+        if (event.target.value == 'some') $('stores-filter').style.display = 'block';
+        else $('stores-filter').style.display = 'none';
+    });
+
 }, false);
 
 </script>
@@ -90,7 +101,7 @@ Event.observe(window, 'load', function() {
                             <td class="label">
                                 Stores to synchronize
                             </td>
-                            <td class="value">
+                            <td class="value" id="stores-to-sync">
                                 <input type="radio" name="store-synchronize" id="store-synchronize-all" value="all"<?php if (is_null($_config->getEnabledStores())) { ?> checked <?php } ?>>
                                 <label for="store-synchronize-all">Synchronize all stores</label><br>
 
@@ -100,27 +111,27 @@ Event.observe(window, 'load', function() {
                                 <input type="radio" name="store-synchronize" id="store-synchronize-some" value="some"<?php if ($_config->getEnabledStores()) { ?> checked <?php } ?>>
                                 <label for="store-synchronize-some">Synchronize some stores</label><br>
 
-                                <!-- @TODO: Add some CSS to only show the stores when the 'some' option is selected -->
-
                                 <br>
-                                <?php
-                                    foreach(Mage::app()->getWebsites() as $website){
-                                        foreach($website->getGroups() as $group){
-                                            foreach($group->getStores() as $store) {
+                                <div id="stores-filter" <?php if ($_config->getEnabledStores() || $_config->getEnabledStores() !== array()) { ?> style="display: none;" <?php } ?>>
+                                    <?php
+                                        foreach(Mage::app()->getWebsites() as $website){
+                                            foreach($website->getGroups() as $group){
+                                                foreach($group->getStores() as $store) {
 
-                                                $enabledStore = is_array($_config->getEnabledStores()) && in_array($store->getId(), $_config->getEnabledStores());
+                                                    $enabledStore = is_array($_config->getEnabledStores()) && in_array($store->getId(), $_config->getEnabledStores());
 
-                                                ?>
-                                                    <input type="checkbox" name="store[]" id="chk-store-<?= $store->getId(); ?>" value="<?= $store->getId(); ?>" <?php if ($enabledStore) { ?> checked="checked" <?php } ?>>
-                                                    <label for="chk-store-<?= $store->getId(); ?>">
-                                                        <?= $website->getName().' > '.$group->getName().' > '.$store->getName(); ?>
-                                                    </label>
-                                                    <br>
-                                                <?php
+                                                    ?>
+                                                        <input type="checkbox" name="store[]" id="chk-store-<?= $store->getId(); ?>" value="<?= $store->getId(); ?>" <?php if ($enabledStore) { ?> checked="checked" <?php } ?>>
+                                                        <label for="chk-store-<?= $store->getId(); ?>">
+                                                            <?= $website->getName().' > '.$group->getName().' > '.$store->getName(); ?>
+                                                        </label>
+                                                        <br>
+                                                    <?php
+                                                }
                                             }
                                         }
-                                    }
-                                ?>
+                                    ?>
+                                </div>
                             </td>
                         </tr>
                     </tbody>

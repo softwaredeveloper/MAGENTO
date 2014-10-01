@@ -32,6 +32,6 @@ class Copernica_Integration_Model_Mysql4_Config extends Mage_Core_Model_Mysql4_A
 {
     protected function _construct()
     {
-        $this->_init('integration/config_data', 'config_id');
+        $this->_init('integration/config', 'config_id');
     }
 }

@@ -98,17 +98,97 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
     }
 
     /**
+     *  Store collection of models
+     *  
+     *  @param  Varien_Data_Collection_Db
+     */
+    public function storeCollection (Varien_Data_Collection_Db $collection)
+    {
+        // if we don't have a proper collection or don't have anything inside 
+        // collection we can bail out
+        if (!is_object($collection) && $collection->count() == 0) return;
+
+        // get resource name of 1st item
+        $resourceName = $collection->getFirstItem()->getResourceName();
+
+        // store collection according to resource name
+        switch ($resourceName) {
+            case 'sales/quote': foreach ($collection as $quote) $this->storeQuote($quote); break;
+            case 'sales/quote_item': foreach ($collection as $item) $this->storeQuoteItem($item); break;
+            case 'sales/order': foreach ($collection as $order) $this->storeOrder($order); break;
+            case 'sales/order_item': foreach ($collection as $item) $this->storeOrderItem($item); break;
+            case 'newsletter/subscriber': foreach ($collection as $subscriber) $this->storeSubscriber($subscriber); break;
+
+            /** 
+             *  Products collection does load product objects with some of the
+             *  needed data, that is why we want to reload product instance
+             *  via Mage::getModel() method.
+             */
+            case 'catalog/product': 
+                foreach ($collection as $product) 
+                {
+                    // reload product
+                    $product = Mage::getModel('catalog/product')->load($product->getId());
+
+                    // store reloaded product
+                    $this->storeProduct($product); 
+                }
+                break;
+
+            /** 
+             *  Address collection does load address objects with some of the
+             *  needed data, that is why we want to reload address instance
+             *  via Mage::getModel() method.
+             */
+            case 'customer/address': 
+                foreach ($collection as $address)
+                {
+                    // reload address data
+                    $address = Mage::getModel('customer/address')->load($address->getId());
+
+                    // store address
+                    $this->storeAddress($address);  
+                } 
+
+                // we are done here
+                break;
+
+            /** 
+             *  Customer collection does load customer objects with some of the
+             *  needed data, that is why we want to reload customer instance
+             *  via Mage::getModel() method.
+             */
+            case 'customer/customer': 
+                foreach ($collection as $customer) 
+                {
+                    // reload customer data
+                    $customer = Mage::getModel('customer/customer')->load($customer->getId());
+
+                    // store customer
+                    $this->storeCustomer($customer); 
+                }
+
+                // we are done here
+                break;
+        }
+    }
+
+    /**
      *  Register a product with copernica
      *
      *  @param  Mage_Catalog_Model_Product  the product that was added or modified
      */
     public function storeProduct(Mage_Catalog_Model_Product $product)
     {
+        // we will need store instance to get the currency code
+        $store = Mage::getModel('core/store')->load($product->getStoreId());
+
         // store the product
         $this->request->put("magento/product/{$product->getId()}", array(
             'sku'           =>  $product->getSku(),
             'name'          =>  $product->getName(),
             'description'   =>  $product->getDescription(),
+            'currency'      =>  $store->getCurrentCurrencyCode(),
             'price'         =>  $product->getPrice(),
             'weight'        =>  $product->getWeight(),
             'modified'      =>  $product->getUpdatedAt(),
@@ -128,6 +208,9 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
         $shippingAddress = $quote->getShippingAddress();
         $billingAddress  = $quote->getBillingAddress();
 
+        // get quote totals
+        $totals = $quote->getTotals();
+
         // store the quote
         $this->request->put("magento/quote/{$quote->getId()}", array(
             'customer'          =>  $quote->getCustomerId(),
@@ -138,7 +221,7 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
             'quantity'          =>  $quote->getItemsQty(),
             'currency'          =>  $quote->getQuoteCurrencyCode(),
             'shipping_cost'     =>  $quote->getShippingAmount(),
-            'tax'               =>  $quote->getTaxAmount(),
+            'tax'               =>  isset($totals['tax']) ? $totals['tax']->getValue() : 0,
             'ip_address'        =>  $quote->getRemoteIp(),
             'last_modified'     =>  $quote->getUpdatedAt(),
         ));
@@ -164,7 +247,14 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
     {
         // load the accompanying quote by id, since the getQuote method
         // seems to be severely borken in some magento versions
-        $quote = Mage::getModel('sales/quote')->load($item->getQuoteId());
+        // Quote is a store entity. And just cause of that magento doing funky
+        // stuff when fetching quote just by id. To fetch quote with any kind 
+        // of useful data we have to explicitly say to magento that we want a 
+        // quote without store.
+        $quote = Mage::getModel('sales/quote')->loadByIdWithoutStore($item->getQuoteId());
+
+        // item-quote relation is super broken
+        $item->setQuote($quote);
 
         // store the quote item
         $this->request->put("magento/quoteitem/{$item->getId()}", array(
@@ -216,11 +306,28 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
         $this->request->put("magento/orderitem/{$item->getId()}", array(
             'order'     =>  $item->getOrderId(),
             'product'   =>  $item->getProductId(),
-            'quantity'  =>  $item->getQty(),
+            'quantity'  =>  $item->getData('qty_ordered'),
             'price'     =>  $item->getPrice(),
             'currency'  =>  $item->getOrder()->getOrderCurrencyCode(),
             'weight'    =>  $item->getWeight(),
         ));
+    }
+
+    /**
+     *  Helper method to get subscription status of a subscriber
+     *  @param  Mage_Newsletter_Model_Subscriber
+     *  @return string
+     */
+    private function subscriptionStatus(Mage_Newsletter_Model_Subscriber $subscriber)
+    {
+        switch ($subscriber->getStatus())
+        {
+            case Mage_Newsletter_Model_Subscriber::STATUS_SUBSCRIBED:   return 'subscribed';
+            case Mage_Newsletter_Model_Subscriber::STATUS_NOT_ACTIVE:   return 'not active';
+            case Mage_Newsletter_Model_Subscriber::STATUS_UNSUBSCRIBED: return 'unsubscribed';
+            case Mage_Newsletter_Model_Subscriber::STATUS_UNCONFIRMED:  return 'unconfirmed';
+            default:                                                    return 'unknown';
+        }
     }
 
     /**
@@ -230,21 +337,12 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
      */
     public function storeSubscriber(Mage_Newsletter_Model_Subscriber $subscriber)
     {
-        // get a string representation of the subscriber status
-        switch ($subscriber->getStatus())
-        {
-            case Mage_Newsletter_Model_Subscriber::STATUS_SUBSCRIBED:   $status = 'subscribed';     break;
-            case Mage_Newsletter_Model_Subscriber::STATUS_NOT_ACTIVE:   $status = 'not active';     break;
-            case Mage_Newsletter_Model_Subscriber::STATUS_UNSUBSCRIBED: $status = 'unsubscribed';   break;
-            case Mage_Newsletter_Model_Subscriber::STATUS_UNCONFIRMED:  $status = 'unconfirmed';    break;
-            default:                                                    $status = 'unknown';        break;
-        }
-
-        // store the subscriber
-        $this->request->put("magento/subscriber/{$subscriber->getId(0)}", array(
-            'customer'  =>  $subscriber->getCustomerId(),
-            'email'     =>  $subscriber->getEmail(),
-        ));
+        // @todo for now we don't have implementation of it
+        // // store the subscriber
+        // $this->request->put("magento/subscriber/{$subscriber->getId(0)}", array(
+        //     'customer'  =>  $subscriber->getCustomerId(),
+        //     'email'     =>  $subscriber->getEmail(),
+        // ));
     }
 
     /**
@@ -254,8 +352,9 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
      */
     public function removeSubscriber(Mage_Newsletter_Model_Subscriber $subscriber)
     {
-        // remove the quote
-        $this->request->delete("magento/subscriber/{$subscriber->getId()}");
+        // @todo for now we don't have implementation of it
+        // // remove the quote
+        // $this->request->delete("magento/subscriber/{$subscriber->getId()}");
     }
 
     /**
@@ -271,6 +370,9 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
         // if we do not get a gender something went wrong (or we don't know the gender)
         if (empty($gender)) $gender = null;
 
+        // get subscriber instance linked with current customer
+        $subscriber = Mage::getModel('newsletter/subscriber')->loadByEmail($customer->getEmail());
+
         // store the customer
         $this->request->put("magento/customer/{$customer->getId()}", array(
             'firstname'     =>  $customer->getFirstname(),
@@ -279,6 +381,7 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
             'lastname'      =>  $customer->getLastname(),
             'email'         =>  $customer->getEmail(),
             'gender'        =>  $gender,
+            'subscribed'    =>  $this->subscriptionStatus($subscriber),
         ));
     }
 
@@ -307,6 +410,7 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
         $this->request->put("magento/address/{$address->getId()}", array(
             'billingAddress'    =>  $customer->getData('default_billing') == $address->getId(),
             'deliveryAddress'   =>  $customer->getData('default_shipping') == $address->getid(),
+            'customer'          =>  $customer->getId(),
             'country'           =>  (string)$address->getCountry(),
             'street'            =>  (string)$address->getStreetFull(),
             'city'              =>  (string)$address->getCity(),

@@ -41,12 +41,18 @@ class Copernica_Integration_Model_Queue extends Mage_Core_Model_Abstract
     /**
      *  Get the data from the model
      *
-     *  @return Mage_Core_Model_Abstract
+     *  @return Mage_Core_Model_Abstract|null
      */
     public function getObject()
     {
+        // get model
+        $model = Mage::getModel(parent::getData('entity_model'));
+
+        // if we our model is not an object we will just return null
+        if (!is_object($model)) return null;
+
         // retrieve the model and load it
-        return Mage::getModel(parent::getData('entity_model'))->load(parent::getData('entity_id'));
+        return $model->load(parent::getData('entity_id'));
     }
 
     /**

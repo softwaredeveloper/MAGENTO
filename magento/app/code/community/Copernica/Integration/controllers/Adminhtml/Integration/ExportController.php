@@ -135,15 +135,8 @@ class Copernica_Integration_Adminhtml_integration_ExportController extends Coper
         {
             $config = Mage::helper('integration/config');
 
-            // set customer progress status to date when a-bomb hit Hiroshima.
-            // we can be quite certain that no magento webshop was set up during that
-            // time.
-            $config->setCustomerProgressStatus('1945-08-06 08:15:00');
-            $config->setOrderProgressStatus('1945-08-06 08:15:00');
-
             // The start synch token must be added to the queue
             $queue = Mage::getModel('integration/queue')
-                ->setObject(null)
                 ->setAction('start_sync')
                 ->save();
 

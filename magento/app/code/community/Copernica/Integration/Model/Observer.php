@@ -410,20 +410,4 @@ class Copernica_Integration_Model_Observer
         }
     }
 
-    /**
-     *  This function will process current queue. Note that not whole queue can
-     *  be processed in one run. User can specify the time and number of items
-     *  to be processed in one run.
-     */
-    public function processQueue()
-    {
-        // if the plug-in is not enabled, skip this
-        if (!$this->enabled()) return;
-
-        // create instance of queue processor
-        $queueProcessor = Mage::getModel('Copernica_Integration_Model_QueueProcessor');
-
-        // process queue
-        $queueProcessor->processQueue();
-    }
 }
