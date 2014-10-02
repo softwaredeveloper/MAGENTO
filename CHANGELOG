@@ -1,4 +1,4 @@
-dev
+14.40 [2014-10-02]
 ~~~
 [#9117] Removed product controller and unsubscribe controller since they don't work
 [#9117] Fixed synchronization of most of the models.
