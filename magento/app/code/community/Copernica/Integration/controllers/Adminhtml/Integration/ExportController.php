@@ -85,22 +85,17 @@ class Copernica_Integration_Adminhtml_integration_ExportController extends Coper
 
         // Is the synchronisation ready to be started?
         if ($helper->isSynchronisationStartScheduled())
-        {
-             $string = "Synchronisation scheduled to be started.";
-        }
+             $string = $this->__("Synchronisation scheduled to be started.");
         elseif ($queueCollection->getSize() > 0)
         {
-            $string = "<b>Number of records</b> : " . $queueCollection->getSize();
-            $string .= "<br/><b>Oldest record</b> : " . $queueCollection->getQueueStartTime();
+            $string = $this->__("Number of records: %s", $queueCollection->getSize());
+            $string .= '<br/>';
+            $string .= $this->__("Oldest record: %s", $queueCollection->getQueueStartTime());
         }
-        else
-        {
-            $string = 'Idle, no recods in queue.';
-        }
+        else $string = $this->__('Idle, no recods in queue.');
 
         // Sent the data
         $response->setBody($string);
-        return;
     }
 
     /**
@@ -117,7 +112,7 @@ class Copernica_Integration_Adminhtml_integration_ExportController extends Coper
         // check to see if there is any POST data along
         if (empty($post))
         {
-            Mage::getSingleton('adminhtml/session')->addError('Invalid data.');
+            Mage::getSingleton('adminhtml/session')->addError($this->__('Invalid data.'));
             return $this->_redirect('*/*');
         }
 
@@ -129,7 +124,7 @@ class Copernica_Integration_Adminhtml_integration_ExportController extends Coper
         {
             // The item has been scheduled already
             Mage::getSingleton('adminhtml/session')
-                    ->addError('A synchronization has already been scheduled, please be patient for it to finish.');
+                    ->addError($this->__('A synchronization has already been scheduled, please be patient for it to finish.'));
         }
         else
         {
@@ -141,7 +136,7 @@ class Copernica_Integration_Adminhtml_integration_ExportController extends Coper
                 ->save();
 
             // The item has been scheduled successfully
-            Mage::getSingleton('adminhtml/session')->addSuccess("The synchronization process has been scheduled!");
+            Mage::getSingleton('adminhtml/session')->addSuccess($this->__("The synchronization process has been scheduled!"));
         }
 
         // reload the page

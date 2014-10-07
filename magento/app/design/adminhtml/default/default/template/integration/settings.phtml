@@ -37,10 +37,12 @@ Event.observe(window, 'load', function() {
 
 <div class="content-header">
     <h3 class="icon-head head-system-account">
-        Copernica Marketing Software : Settings
+        <?php echo $this->__("Copernica Marketing Software : Settings"); ?>
     </h3>
     <p class="form-buttons">
-        <button type="button" name="synchronize_save" id="synchronize_save">Save connection settings</button>
+        <button type="button" name="synchronize_save" id="synchronize_save">
+            <?php echo $this->__("Save connection settings"); ?>
+        </button>
     </p>
 </div>
 
@@ -49,7 +51,7 @@ Event.observe(window, 'load', function() {
         <?php echo $this->getBlockHtml('formkey'); ?>
         <div class="entry-edit-head">
             <h4 class="icon-head head-edit-form fieldset-legend">
-                Synchronization settings
+                <?php echo $this->__("Synchronization settings"); ?>
             </h4>
         </div>
 
@@ -58,21 +60,29 @@ Event.observe(window, 'load', function() {
                     <table cellspacing="0" class="form-list">
                         <tbody>
                             <tr>
-                                <td class="label">Authorization</td>
+                                <td class="label">
+                                    <?php echo $this->__("Authorization"); ?>
+                                </td>
                                 <td>
                                     <?php
                                         if (!$_config->getAccessToken())
                                         {
+                                            echo $this->__("Magento is not authorized with a Copernica account.");
                                             ?>
-                                                Magento is not authorized with a Copernica account.<br>
-                                                <a href="<?= $this->getAuthorizeURI(); ?>">Authorize magento with a Copernica account</a>
+                                                <br/>
+                                                <a href="<?php echo $this->getAuthorizeURI(); ?>">
+                                                    <?php echo $this->__("Authorize magento with a Copernica account"); ?>
+                                                </a>
                                             <?php
                                         }
                                         else
                                         {
+                                               echo $this->__("Magento is authorized to account '%s'", $_config->getAccountName());
                                             ?>
-                                               Magento is authorized to account '<?= $_config->getAccountName(); ?>'.<br>
-                                                <a href="<?= $this->getAuthorizeURI(); ?>">Re-authorize to a different account</a>
+                                                <br/>
+                                                <a href="<?php echo $this->getAuthorizeURI(); ?>">
+                                                    <?php echo $this->__("Re-authorize to a different account");?>
+                                                </a>
                                             <?php
                                         }
                                     ?>
@@ -89,7 +99,7 @@ Event.observe(window, 'load', function() {
         <?php echo $this->getBlockHtml('formkey'); ?>
         <div class="entry-edit-head">
             <h4 class="icon-head head-edit-form fieldset-legend">
-                Stores settings
+                <?php echo $this->__("Stores settings"); ?>
             </h4>
         </div>
 
@@ -99,19 +109,28 @@ Event.observe(window, 'load', function() {
                     <tbody>
                         <tr>
                             <td class="label">
-                                Stores to synchronize
+                                <?php echo $this->__("Stores to synchronize"); ?>
                             </td>
                             <td class="value" id="stores-to-sync">
                                 <input type="radio" name="store-synchronize" id="store-synchronize-all" value="all"<?php if (is_null($_config->getEnabledStores())) { ?> checked <?php } ?>>
-                                <label for="store-synchronize-all">Synchronize all stores</label><br>
+                                <label for="store-synchronize-all">
+                                    <?php echo $this->__("Synchronize all stores"); ?>
+                                </label>
+                                <br/>
 
                                 <input type="radio" name="store-synchronize" id="store-synchronize-none" value="none"<?php if ($_config->getEnabledStores() === array()) { ?> checked <?php } ?>>
-                                <label for="store-synchronize-none">Disable synchronization</label><br>
+                                <label for="store-synchronize-none">
+                                    <?php echo $this->__("Disable synchronization"); ?>
+                                </label>
+                                <br/>
 
                                 <input type="radio" name="store-synchronize" id="store-synchronize-some" value="some"<?php if ($_config->getEnabledStores()) { ?> checked <?php } ?>>
-                                <label for="store-synchronize-some">Synchronize some stores</label><br>
+                                <label for="store-synchronize-some">
+                                    <?php echo $this->__("Synchronize some stores"); ?>
+                                </label>
+                                <br/>
 
-                                <br>
+                                <br/>
                                 <div id="stores-filter" <?php if ($_config->getEnabledStores() || $_config->getEnabledStores() !== array()) { ?> style="display: none;" <?php } ?>>
                                     <?php
                                         foreach(Mage::app()->getWebsites() as $website){
@@ -121,11 +140,11 @@ Event.observe(window, 'load', function() {
                                                     $enabledStore = is_array($_config->getEnabledStores()) && in_array($store->getId(), $_config->getEnabledStores());
 
                                                     ?>
-                                                        <input type="checkbox" name="store[]" id="chk-store-<?= $store->getId(); ?>" value="<?= $store->getId(); ?>" <?php if ($enabledStore) { ?> checked="checked" <?php } ?>>
-                                                        <label for="chk-store-<?= $store->getId(); ?>">
-                                                            <?= $website->getName().' > '.$group->getName().' > '.$store->getName(); ?>
+                                                        <input type="checkbox" name="store[]" id="chk-store-<?php echo $store->getId(); ?>" value="<?php echo $store->getId(); ?>" <?php if ($enabledStore) { ?> checked="checked" <?php } ?>>
+                                                        <label for="chk-store-<?php echo $store->getId(); ?>">
+                                                            <?php echo $website->getName().' > '.$group->getName().' > '.$store->getName(); ?>
                                                         </label>
-                                                        <br>
+                                                        <br/>
                                                     <?php
                                                 }
                                             }

@@ -62,7 +62,7 @@ class Copernica_Integration_Controller_Base extends Mage_Adminhtml_Controller_Ac
         if ($queueSize < 100) return;
 
         // add warning to admin session
-        Mage::getSingleton('adminhtml/session')->addWarning("There is queue of $queueSize local modification waiting to be processed");
+        Mage::getSingleton('adminhtml/session')->addWarning(Mage::helper('integration')->__("There is queue of %s local modification waiting to be processed", $queueSize));
     }
 
     /**
@@ -84,7 +84,7 @@ class Copernica_Integration_Controller_Base extends Mage_Adminhtml_Controller_Ac
         $printableTime = Mage::helper('core')->formatDate($oldestItemTimestamp, 'short', true);
 
         // alert admin
-        Mage::getSingleton('adminhtml/session')->addWarning("There is still a modification of $printableTime that is not synchronized with Copernica.");
+        Mage::getSingleton('adminhtml/session')->addWarning(Mage::helper('integration')->__("There is still a modification of %s that is not synchronized with Copernica.", $printableTime));
     }
 
     /**

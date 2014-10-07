@@ -14,11 +14,11 @@ $_core = Mage::helper('core');
 
 // format some dates
 $oldestRecordTime = $_collection->getQueueStartTime();
-$printableOldestRecordTime = $oldestRecordTime ? $_core->formatDate($oldestRecordTime, 'short', true) : "No records in queue";
+$printableOldestRecordTime = $oldestRecordTime ? $_core->formatDate($oldestRecordTime, 'short', true) : $this->__("No records in queue");
 $lastStartTime = $_config->getLastStartTimeCronjob();
-$printableLastStartTime = $lastStartTime ? $_core->formatDate($lastStartTime, 'short', true) : "Never started";
+$printableLastStartTime = $lastStartTime ? $_core->formatDate($lastStartTime, 'short', true) : $this->__("Never started");
 $lastEndTime = $_config->getLastEndTimeCronjob();
-$printableLastEndTime = $lastEndTime ? $_core->formatDate($lastEndTime, 'short', true) : "Never finished";
+$printableLastEndTime = $lastEndTime ? $_core->formatDate($lastEndTime, 'short', true) : $this->__("Never finished");
 
 // is there a queue?
 $queueLength = $_collection->getSize();
@@ -52,29 +52,40 @@ function timeoutSync()
 <!-- end of loader -->
 
 <div class="content-header">
-    <h3 class="icon-head head-system-account">Copernica Marketing Software : Synchronize Data</h3>
+    <h3 class="icon-head head-system-account">
+        <?php echo $this->__("Copernica Marketing Software : Synchronize Data"); ?>
+    </h3>
     <p class="form-buttons">
-        <button type="button" onclick="cpgForm.submit();" name="cp_export" id="cp_export">Synchronize Data</button>
+        <button type="button" onclick="cpgForm.submit();" name="cp_export" id="cp_export">
+            <?php echo $this->__("Synchronize Data"); ?>
+        </button>
     </p>
-    <!-- <div style="float: rightbackground-color: #CCCCCC; padding: 2px 8px; color: white; font-weight: bold">Synchronize Data</div> -->
 </div>
 <div class="entry-edit">
     <form action="<?php echo $this->getPostUrl(); ?>" method="post" name="cp_form_get" id="cp_form_get">
         <?php echo $this->getBlockHtml('formkey'); ?>
         <div class="entry-edit-head collapseable">
-            <h4 class="icon-head head-edit-form fieldset-legend">Export customers and their orders</h4>
-            <a href="#" onclick ="document.getElementById('export_help').style.display='block'; return false;" id="page-help-link" style="float: right; line-height:18px;">More information</a>
+            <h4 class="icon-head head-edit-form fieldset-legend">
+                <?php echo $this->__("Export customers and their orders"); ?>
+            </h4>
+            <a href="#" onclick ="document.getElementById('export_help').style.display='block'; return false;" id="page-help-link" style="float: right; line-height:18px;">
+                <?php echo $this->__("More information"); ?>
+            </a>
         </div>
         <div class="fieldset collapseable">
             <div class="hor-scroll">
                 <input type="hidden" id="cp_securitycheck" name="cp_securitycheck" value="export_data_only_when_needed">
-                <div id="sync">Loading...</div>
+                <div id="sync">
+                    <?php echo $this->__("Loading..."); ?>
+                </div>
             </div>
         </div>
     </form>
     
     <div class="entry-edit-head collapseable">
-        <a id="debug_info-head" <?php if ($open) echo "class=\"open\""; ?> onclick="Fieldset.toggleCollapse('debug_info'); return false;" href="#">Debug information</a>
+        <a id="debug_info-head" <?php if ($open) echo "class=\"open\""; ?> onclick="Fieldset.toggleCollapse('debug_info'); return false;" href="#">
+            <?php echo $this->__("Debug information"); ?>
+        </a>
     </div>
     <input id="debug_info-state" type="hidden" <?php if($open) echo "value=\"1\""; ?> name="config_state[debug_info]">
     <div class="fieldset collapseable" id="debug_info" style="<?php if (!$open) echo "display:none"; ?>">
@@ -82,62 +93,123 @@ function timeoutSync()
             <table cellspacing="0" class="form-list">
                 <tbody>
                     <tr>
-                        <td class="label">Plug-in enabled: </td>
-                        <td class="value"><strong><?php echo $_helper->enabled() ? "Yes" : "No";?></strong></td>
+                        <td class="label">
+                            <?php echo $this->__("Plug-in enabled:"); ?>
+                        </td>
+                        <td class="value">
+                            <strong>
+                                <?php echo $_helper->enabled() ? $this->__("Yes") : $this->__("No");?>
+                            </strong>
+                        </td>
                     </tr>
                     <tr>
-                        <td class="label">Queue length: </td>
-                        <td class="value"><strong><?php echo $queueLength;?></strong></td>
+                        <td class="label">
+                            <?php echo $this->__("Queue length:"); ?>
+                        </td>
+                        <td class="value">
+                            <strong>
+                                <?php echo $queueLength;?>
+                            </strong>
+                        </td>
                     </tr>
                     <tr>
-                        <td class="label">Last time cronjob started: </td>
-                        <td class="value"><strong><?php echo $printableLastStartTime;?></strong></td>
+                        <td class="label">
+                            <?php echo $this->__("Last time cronjob started:"); ?>
+                        </td>
+                        <td class="value">
+                            <strong>
+                                <?php echo $printableLastStartTime;?>
+                            </strong>
+                        </td>
                     </tr>
                     <tr>
-                        <td class="label">Last time cronjob finished: </td>
-                        <td class="value"><strong><?php echo $printableLastEndTime;?></strong></td>
+                        <td class="label">
+                            <?php echo $this->__("Last time cronjob finished:"); ?>
+                        </td>
+                        <td class="value">
+                            <strong>
+                                <?php echo $printableLastEndTime;?>
+                            </strong>
+                        </td>
                     </tr>
                     <tr>
-                        <td class="label">Proccesed task(s) in last run: </td>
-                        <td class="value"><strong><?php echo $_config->getLastCronjobProcessedTasks();?></strong></td>
+                        <td class="label">
+                            <?php echo $this->__("Proccesed task(s) in last run:"); ?>
+                        </td>
+                        <td class="value">
+                            <strong>
+                                <?php echo $_config->getLastCronjobProcessedTasks();?>
+                            </strong>
+                        </td>
                     </tr>
                     <?php if ($queueLength > 0)
                     {
                     ?>
                         <tr>
-                            <td class="label">Synchronization start scheduled: </td>
-                            <td class="value"><strong><?php echo $_helper->isSynchronisationStartScheduled() ? "Yes" : "No";?></strong></td>
+                            <td class="label">
+                                <?php echo $this->__("Synchronization start scheduled:"); ?>
+                            </td>
+                            <td class="value">
+                                <strong>
+                                    <?php echo $_helper->isSynchronisationStartScheduled() ? $this->__("Yes") : $this->__("No");?>
+                                </strong>
+                            </td>
                         </tr>
                         <tr>
-                            <td class="label">Oldest queue-ed change: </td>
-                            <td class="value"><strong><?php echo $printableOldestRecordTime;?></strong></td>
+                            <td class="label">
+                                <?php echo $this->__("Oldest queue-ed change:"); ?>
+                            </td>
+                            <td class="value">
+                                <strong>
+                                    <?php echo $printableOldestRecordTime;?>
+                                </strong>
+                            </td>
                         </tr>
                         <tr>
-                            <td class="label">Oldest warning: </td>
-                            <td class="value"><strong><?php echo ($result = $_collection->getOldestResult()) ? $result : '<i>No problems occured</i>';?></strong></td>
+                            <td class="label">
+                                <?php echo $this->__("Oldest warning:"); ?>
+                            </td>
+                            <td class="value">
+                                <strong>
+                                    <?php echo ($result = $_collection->getOldestResult()) ? $result : '<i>'.$this->__("No problems occured").'</i>';?>
+                                </strong>
+                            </td>
                         </tr>
                     <?php
-                    }
-                    ?>
+                    } ?>
                 </tbody>
             </table>
         </div>
     </div>
     
     <div class="entry-edit-head collapseable">
-        <h4 class="icon-head head-edit-form fieldset-legend">Environment Information</h4>
+        <h4 class="icon-head head-edit-form fieldset-legend">
+            <?php echo $this->__("Environment Information"); ?>
+        </h4>
     </div>
     <div class="fieldset collapseable">
         <div class="hor-scroll">
             <table cellspacing="0" class="form-list">
                 <tbody>
                     <tr>
-                        <td class="label">Copernica extension version: </td>
-                        <td class="value"><strong><?php echo $_helper->getExtensionVersion();?></strong></td>
+                        <td class="label">
+                            <?php echo $this->__("Copernica extension version:"); ?>
+                        </td>
+                        <td class="value">
+                            <strong>
+                                <?php echo $_helper->getExtensionVersion();?>
+                            </strong>
+                        </td>
                     </tr>
                     <tr>
-                        <td class="label">Magento webshop version: </td>
-                        <td class="value"><strong><?php echo Mage::getVersion();?></strong></td>
+                        <td class="label">
+                            <?php echo $this->__("Magento webshop version:"); ?>
+                        </td>
+                        <td class="value">
+                            <strong>
+                                <?php echo Mage::getVersion();?>
+                            </strong>
+                        </td>
                     </tr>
                 </tbody>
             </table>
@@ -146,24 +218,36 @@ function timeoutSync()
 </div>
 <!-- export help -->
 <div id="export_help" style="display: none; position: absolute; top: 20%; left: 25%; width: 650px; height: 425px; padding: 20px; border: 1px solid black; z-index:1002;background-color: #FDFAB1; color: black;">
-    <h3 style="text-align: center;">Synchronize Data HOW-TO</h3>
-    Synchronize existing Magento data (Customers, Orders - including the Ordered Products) with the Copernica Database.
-    <br/><br/>
-    To export current Magento data to your Copernica Database, press the "Synchronize Data" button, which can be found in the top-right corner.
-    <br/><br/>
-    This will export all Magento Customers to the Copernica Profiles, all Magento Orders to the Copernica Orders Collection and all Magento Orderd Products to the Copernica Products Collection.
-    <br/><br/>
-    A timestamp is attached to the last synchronization operation and displayed in the "Last synchronization was completed on :" message, on this page. This way, you can keep track of your past synchronizations.
-    <br/><br/>
-    A synchronization in progress will lock the system for further launches of the "Synchronize Data" operation, until the current operation is successfully completed.
-    <br/><br/>
-    [+] If, for some reason, the synchronization operation doesn't respond anymore, you can reset its status by going to the "Account Settings" submenu under the "Copernica Marketing Software" menu and click the "Save connection settings" button, which can be found in top-right corner.
-    <br/><br/>
-    [+] We recommend running this feature only when you first install the extension.
-    <br/><br/>
-    [+] After the Copernica Database is synchronized with the Magento Data, further Magento Data, coming from live customer's actions, are automatically exported to the Copernica Database by the extension itself.
-    <br/>
-    <a href="#" onclick="document.getElementById('export_help').style.display='none';" style="top:0; right:6px; position: absolute; return false;">Close</a>
+    <h3 style="text-align: center;">
+        <?php echo $this->__("Synchronize Data HOW-TO"); ?>
+    </h3>
+    <p>
+        <?php echo $this->__("Synchronize existing Magento data (Customers, Orders - including the Ordered Products) with the Copernica Database."); ?>
+    </p>
+    <p>
+        <?php echo $this->__("To export current Magento data to your Copernica Database, press the \"Synchronize Data\" button, which can be found in the top-right corner."); ?>
+    </p>
+    <p>
+        <?php echo $this->__("This will export all Magento Customers to the Copernica Profiles, all Magento Orders to the Copernica Orders Collection and all Magento Orderd Products to the Copernica Products Collection."); ?>
+    </p>
+    <p>
+        <?php echo $this->__("A timestamp is attached to the last synchronization operation and displayed in the \"Last synchronization was completed on :\" message, on this page. This way, you can keep track of your past synchronizations."); ?>
+    </p>
+    <p>
+        <?php echo $this->__("A synchronization in progress will lock the system for further launches of the \"Synchronize Data\" operation, until the current operation is successfully completed."); ?>
+    </p>
+    <p> 
+        [+] <?php echo $this->__("If, for some reason, the synchronization operation doesn't respond anymore, you can reset its status by going to the \"Account Settings\" submenu under the \"Copernica Marketing Software\" menu and click the \"Save connection settings\" button, which can be found in top-right corner."); ?>
+    </p>
+    <p>
+        [+] <?php echo $this->__("We recommend running this feature only when you first install the extension."); ?>    
+    </p>
+    <p>
+        [+] <?php echo $this->__("After the Copernica Database is synchronized with the Magento Data, further Magento Data, coming from live customer's actions, are automatically exported to the Copernica Database by the extension itself."); ?>
+    </p>
+    <a href="#" onclick="document.getElementById('export_help').style.display='none';" style="top:0; right:6px; position: absolute; return false;">
+        <?php echo $this->__("Close"); ?>
+    </a>
 </div>
 
 <script type="text/javascript">
