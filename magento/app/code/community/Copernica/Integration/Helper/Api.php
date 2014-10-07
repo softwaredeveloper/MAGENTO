@@ -118,6 +118,7 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
             case 'sales/order': foreach ($collection as $order) $this->storeOrder($order); break;
             case 'sales/order_item': foreach ($collection as $item) $this->storeOrderItem($item); break;
             case 'newsletter/subscriber': foreach ($collection as $subscriber) $this->storeSubscriber($subscriber); break;
+            case 'core/store': foreach ($collection as $store) $this->storeStore($store); break;
 
             /** 
              *  Products collection does load product objects with some of the
@@ -214,6 +215,7 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
         // store the quote
         $this->request->put("magento/quote/{$quote->getId()}", array(
             'customer'          =>  $quote->getCustomerId(),
+            'store'             =>  $quote->getStoreId(),
             'shipping_address'  =>  is_null($shippingAddress)   ? null : $shippingAddress->getId(),
             'billing_address'   =>  is_null($billingAddress)    ? null : $billingAddress->getId(),
             'weight'            =>  is_null($shippingAddress)   ? null : $shippingAddress->getWeight(),
@@ -282,6 +284,7 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
         $this->request->put("magento/order/{$order->getId()}", array(
             'quote'             =>  $order->getQuoteId(),
             'customer'          =>  $order->getCustomerId(),
+            'store'             =>  $order->getStoreId(),
             'shipping_address'  =>  is_null($shippingAddress)   ? null : $shippingAddress->getId(),
             'billing_address'   =>  is_null($billingAddress)    ? null : $billingAddress->getId(),
             'state'             =>  $order->getState(),
@@ -375,6 +378,7 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
 
         // store the customer
         $this->request->put("magento/customer/{$customer->getId()}", array(
+            'store'         =>  $customer->getStoreId(),
             'firstname'     =>  $customer->getFirstname(),
             'prefix'        =>  $customer->getPrefix(),
             'middlename'    =>  $customer->getMiddlename(),
@@ -419,6 +423,29 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
             'phone'             =>  (string)$address->getTelephone(),
             'fax'               =>  (string)$address->getFax(),
             'company'           =>  (string)$address->getCompany(),
+        ));
+    }
+
+    /**
+     *  Store an store in copernica
+     *  
+     *  @param  Mage_Core_Model_Store
+     */
+    public function storeStore(Mage_Core_Model_Store $store)
+    {
+        // get store website
+        $website = $store->getWebsite();
+
+        // get store group
+        $group = $store->getGroup();
+
+        // store the store
+        $this->request->put("magento/store/{$store->getId()}", array(
+            'name'          => $store->getName(),
+            'websiteId'     => $website->getId(),
+            'websiteName'   => $website->getName(),
+            'groupId'       => $group->getId(),
+            'groupName'     => $group->getName()
         ));
     }
 }

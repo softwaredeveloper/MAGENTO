@@ -385,6 +385,28 @@ class Copernica_Integration_Model_Observer
     /**
      *  Method for the following events:
      *
+     *  'core_store_save_after'
+     *
+     *  This method is triggered when a store is created or updated
+     *  
+     *  @param  Varien_Event_Observer   observer object
+     */
+    public function storeModified(Varien_Event_Observer $observer)
+    {
+        // if the plugin is not enabled, skip this
+        if (!$this->enabled()) return;
+
+        // do we have a valid store
+        if ($store = $observer->setEvent()->getStore() && $store->getID())
+        {
+            // add this store to the synchronize queue
+            $this->synchronize($store);
+        }
+    }
+
+    /**
+     *  Method for the following events:
+     *
      *  'catalog_controller_product_view'
      *
      *  This method is triggered when a customer views a product

@@ -43,6 +43,14 @@
                     </integration_observer>
                 </observers>
             </checkout_controller_multishipping_shipping_post>
+            <core_store_save_after>
+                <observers>
+                    <integration_observer>
+                        <class>integration/observer</class>
+                        <method>storeModified</method>
+                    </integration_observer>
+                </observers>
+            </core_store_save_after>
             <sales_quote_item_delete_before>
                 <observers>
                     <integration_observer>

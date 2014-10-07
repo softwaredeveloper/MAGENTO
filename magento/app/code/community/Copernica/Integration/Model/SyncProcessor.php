@@ -37,6 +37,7 @@ class Copernica_Integration_Model_SyncProcessor
      *  @var    array
      */
     private $models = array (
+        'core/store',
         'customer/customer', 
         'catalog/product', 
         'sales/quote', 
@@ -51,7 +52,7 @@ class Copernica_Integration_Model_SyncProcessor
      *  Current model resource name.
      *  @var    string
      */
-    private $currentModel = 'customer/customer';
+    private $currentModel = 'core/store';
 
     /**
      *  Id of last model that was processed.
@@ -261,6 +262,7 @@ class Copernica_Integration_Model_SyncProcessor
     private function collectionPrimaryKey(Varien_Data_Collection_Db $collection) 
     {
         switch (get_class($collection)) {
+            case 'Mage_Core_Model_Resource_Store_Collection': return 'store_id';
             case 'Mage_Sales_Model_Resource_Quote_Item_Collection': return 'item_id';
             case 'Mage_Sales_Model_Resource_Order_Item_Collection': return 'item_id';
             case 'Mage_Newsletter_Model_Resource_Subscriber_Collection': return 'subscriber_id';

@@ -190,6 +190,7 @@ class Copernica_Integration_Model_QueueProcessor
                 case 'customer/customer/remove':        $this->api->removeCustomer($object);    break;
                 case 'customer/customer/store':         $this->api->storeCustomer($object);     break;
                 case 'customer/address/store':          $this->api->storeAddress($object);      break;
+                case 'core/store/store':                $this->api->storeStore($object);        break;
 
                 // Start sync is a more complicated task to process.
                 case '/start_sync':
