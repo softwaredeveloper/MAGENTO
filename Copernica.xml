@@ -1,0 +1,99 @@
+<_>
+   <form_key>ToMiLExwBVINns3Y</form_key>
+   <name>Copernica</name>
+   <channel>community</channel>
+   <version_ids>
+      <version_ids>2</version_ids>
+   </version_ids>
+   <summary>Extension to link Magento to Copernica Marketing Software. Developed by Copernica.</summary>
+   <description>Customers information, shopping carts, products and orders are automatically synchronized with Copernica Marketing Software, so that you can send out marketing campaigns with Copernica based on this information.
+
+Copernica Marketing Software is a marketing automation tool for sending email campaigns. For more information see &lt;a href=&quot;https://www.copernica.com&quot;&gt;www.copernica.com&lt;/a&gt;.</description>
+   <license>LGPL</license>
+   <license_uri/>
+   <version>14.41.1.1</version>
+   <stability>beta</stability>
+   <notes>Fixed dependencies.</notes>
+   <authors>
+      <name>
+         <name>Emiel Bruijntjes</name>
+      </name>
+      <user>
+         <user>EmielBruijntjes</user>
+      </user>
+      <email>
+         <email>emiel.bruijntjes@copernica.com</email>
+      </email>
+   </authors>
+   <depends_php_min>5.3.0</depends_php_min>
+   <depends_php_max>6.0.0</depends_php_max>
+   <depends>
+      <package>
+         <name>
+            <name/>
+         </name>
+         <channel>
+            <channel/>
+         </channel>
+         <min>
+            <min/>
+         </min>
+         <max>
+            <max/>
+         </max>
+         <files>
+            <files>                 </files>
+         </files>
+      </package>
+      <extension>
+         <name>
+            <name>Core</name>
+            <name>curl</name>
+         </name>
+         <min>
+            <min/>
+            <min/>
+         </min>
+         <max>
+            <max/>
+            <max/>
+         </max>
+      </extension>
+   </depends>
+   <contents>
+      <target>
+         <target>magelocal</target>
+         <target>magecommunity</target>
+         <target>magedesign</target>
+         <target>mageetc</target>
+      </target>
+      <path>
+         <path/>
+         <path>Copernica</path>
+         <path>adminhtml/default/default/template/integration</path>
+         <path>modules/Copernica_Integration.xml</path>
+      </path>
+      <type>
+         <type>file</type>
+         <type>dir</type>
+         <type>dir</type>
+         <type>file</type>
+      </type>
+      <include>
+         <include/>
+         <include/>
+         <include/>
+         <include/>
+      </include>
+      <ignore>
+         <ignore/>
+         <ignore/>
+         <ignore/>
+         <ignore/>
+      </ignore>
+   </contents>
+   <page>1</page>
+   <limit>200</limit>
+   <folder/>
+   <package/>
+</_>

@@ -107,7 +107,8 @@ directory. It contains the following files:
 
     Model/SyncProcessor.php
     ~~~~~~~~~~~~~~~~~~~~~~~
-    ????
+    Class that is executed by 'start_sync' task. Its responsibility is to 
+    synchronize old data in reasonable time chunks.
 
     Model/Queue.php
     ~~~~~~~~~~~~~~~
@@ -146,4 +147,29 @@ directory. It contains the following files:
     ~~~~~~~~~~~~~~~~~~~~~~
     Class that wraps a REST request. This class also contains the address
     of the Copernica API.
+
+The deployment
+~~~~~~~~~~~~~~
+To deploy extension on connect platform it's essential to have a working magetno
+installation. It's wise to use newest possible version. Follow this steps to 
+deploy magento extension:
+
+1.  Ensure that magento installation that will be used to deploy extension 
+    contains desired extension version.
+
+2.  Copy Copernica.xml to {magento}/var/connect.
+
+3.  On admin panel go to System > Magento Connect > Package Extension. Go to 
+    "Load local package" and pick "Copernica". Package form should be filled 
+    with correct data.
+
+    NOTE: When directory structure changes between releases it's imperative to 
+    check if all files are included in Contents tab.
+
+4.  Update version and release info in "Release info" tab and hit "Save Data and 
+    Create Package" button. A Copernica-{version}.tgz file should be created. This
+    file should be uploaded on magento connect website. After upload is completed
+    new extension version will be available via connect platform.
+
+
 
