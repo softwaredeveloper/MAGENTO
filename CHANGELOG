@@ -1,4 +1,4 @@
-dev
+14.41.2 [2014-10-10]
 ~~~
 [#9178] Added pre-freeze.php script that automatically updates version numbers in XML files
 
