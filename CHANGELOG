@@ -1,3 +1,7 @@
+dev
+~~~
+[#9178] Added pre-freeze.php script that automatically updates version numbers in XML files
+
 14.41.1 [2014-10-08]
 ~~~
 [#9178] Added README file
