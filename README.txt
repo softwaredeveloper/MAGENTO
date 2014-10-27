@@ -9,40 +9,31 @@ following ones:
     The are two plugins available on Magento connect: a relatively old 
     Copernica-Magento plugin that is being maintained by "Cream", a 
     company based in The Netherlands. This plugin uses the Copernica 
-    SOAP API to create and update Copernica profiles when events occur
+    REST API to create and update Copernica profiles when events occur
     (orders, add-to-basket, etc). There is no public source repository 
-    (like github) for this plugin. However, an updated version of this 
-    plugin can be found on github: https://github.com/CopernicaMarketingSoftware/PLUGIN-MAGENTO-1
+    (like on GitHub) for this plugin.
     
     The other plugin available on MagentoConnect is the brand new plugin
     developed by Copernica. This plugin uses a custom-for-Magento API to
     communicate between Copernica and Magento. At this point in time,
     this plugin is still in development and can not yet be used in
     production. The latest version of the source code for this new plugin 
-    can be found on Github: https://github.com/CopernicaMarketingSoftware/PLUGIN-MAGENTO-2
+    can be found on Github: 
+    
+        https://github.com/CopernicaMarketingSoftware/MAGENTO
     
 * On GitHub
 
-    On GitHub two different projects exist for Copernica-Magento integrations:
+    The new plugin developed by Copernica (mentioned above) can also
+    be found on GitHub. On GitHub you have always access to the bleeding
+    edge, latest version of the plugin.
+
+        https://github.com/CopernicaMarketingSoftware/MAGENTO
     
-    *https://github.com/CopernicaMarketingSoftware/PLUGIN-MAGENTO-1*
-    
-    Thus plugin is originally based on the old "Cream" plugin that can 
-    be found on MagentoConnect and that we described above, but it has 
-    been further improved. It for example no longer uses the old Copernica 
-    SOAP API, but the much faster new Copernica REST API. If you now use 
-    the old plugin by Cream and encounter difficulties, you could try 
-    this new plugin instead.
-    
-    *https://github.com/CopernicaMarketingSoftware/PLUGIN-MAGENTO-2*
-    
-    This is the new plugin that can also be found on MagentoConnect. It
-    is a brand new plugin that no longer uses a generic Copernica API,
-    but a special Copernica endpoint optimized for Magento. This new
-    plugin is under development, and can not yet been used in production.
-    
-We expect that the new plugin (PLUGIN-MAGENTO-2) will eventually
-replace the old plugins (PLUGIN-MAGENTO-1 and the one developed by Cream).
+
+We expect that the new plugin (the one on GitHub, and the one on MagentoConnect
+offered by Copernica) will eventually replace the old plugin (the one on
+MagentoConnect offered by Cream).
 
 
 Directory structure
