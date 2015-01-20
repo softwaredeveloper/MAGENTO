@@ -13,4 +13,4 @@ then
 fi
 
 # we want to zip whole dir but exclude .git directories directories
-zip -r $BASEDIR/copernica_magento_extension.zip $BASEDIR/magento --exclude=*.git* > /dev/null
+(cd $BASEDIR && zip -r copernica_magento_extension.zip magento --exclude=*.git* > /dev/null)
