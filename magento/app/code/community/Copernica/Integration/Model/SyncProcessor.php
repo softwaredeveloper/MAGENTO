@@ -275,14 +275,14 @@ class Copernica_Integration_Model_SyncProcessor
      */
     private function nextCollection()
     {
-        // get next model
-        $model = $this->models[array_search($this->currentModel, $this->models) + 1];
+        // get next model index
+        $nextModelIdx = array_search($this->currentModel, $this->models) + 1;
+
+        // set next model name
+        $this->currentModel = $nextModelIdx < count($this->models) ? $this->models[$nextModelIdx] : null;
 
         // since we want to make a switch we should reset last model Id
         $this->lastModelId = 0;
-
-        // set fetched model as current one
-        $this->currentModel = $model;
 
         // we just switched collection
         $this->switchCollection = false;
