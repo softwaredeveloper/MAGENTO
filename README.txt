@@ -205,9 +205,9 @@ deploy magento extension:
     check if all files are included in Contents tab.
 
 4.  Update version and release info in "Release info" tab and hit "Save Data and 
-    Create Package" button. A Copernica-{version}.tgz file should be created. This
-    file should be uploaded on magento connect website. After upload is completed
-    new extension version will be available via connect platform.
+    Create Package" button. A Copernica-{version}.tgz file should be created. 
+    This file should be uploaded on magento connect website. After upload is 
+    completed new extension version will be available via connect platform.
 
 
 
