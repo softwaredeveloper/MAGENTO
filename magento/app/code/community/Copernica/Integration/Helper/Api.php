@@ -340,12 +340,14 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
      */
     public function storeSubscriber(Mage_Newsletter_Model_Subscriber $subscriber)
     {
-        // @todo for now we don't have implementation of it
-        // // store the subscriber
-        // $this->request->put("magento/subscriber/{$subscriber->getId(0)}", array(
-        //     'customer'  =>  $subscriber->getCustomerId(),
-        //     'email'     =>  $subscriber->getEmail(),
-        // ));
+        // store the subscriber
+        $this->request->put("magento/subscriber/{$subscriber->getId()}", array(
+            'customer'  =>  $subscriber->getCustomerId(),
+            'email'     =>  $subscriber->getEmail(),
+            'modified'  =>  $subscriber->getChangeStatusAt(),
+            'status'    =>  $this->subscriptionStatus($subscriber),
+            'store'     =>  $subscriber->getStoreId(),
+        ));
     }
 
     /**
@@ -355,9 +357,8 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
      */
     public function removeSubscriber(Mage_Newsletter_Model_Subscriber $subscriber)
     {
-        // @todo for now we don't have implementation of it
-        // // remove the quote
-        // $this->request->delete("magento/subscriber/{$subscriber->getId()}");
+        // remove the quote
+        $this->request->delete("magento/subscriber/{$subscriber->getId()}");
     }
 
     /**
