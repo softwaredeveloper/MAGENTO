@@ -215,7 +215,7 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
         // store the quote
         $this->request->put("magento/quote/{$quote->getId()}", array(
             'customer'          =>  $quote->getCustomerId(),
-            'store'             =>  $quote->getStoreId(),
+            'webstore'          =>  $quote->getStoreId(),
             'shipping_address'  =>  is_null($shippingAddress)   ? null : $shippingAddress->getId(),
             'billing_address'   =>  is_null($billingAddress)    ? null : $billingAddress->getId(),
             'weight'            =>  is_null($shippingAddress)   ? null : $shippingAddress->getWeight(),
@@ -280,21 +280,35 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
         $shippingAddress = $order->getShippingAddress();
         $billingAddress  = $order->getBillingAddress();
 
+        // determine the gender of the customer
+        $gender = strtolower(Mage::getResourceSingleton('customer/customer')->getAttribute('gender')->getSource()->getOptionText($order->getCustomerGender()));
+
+        // if we do not get a gender something went wrong (or we don't know the gender)
+        if (empty($gender)) $gender = null;
+
         // store the quote
         $this->request->put("magento/order/{$order->getId()}", array(
-            'quote'             =>  $order->getQuoteId(),
-            'customer'          =>  $order->getCustomerId(),
-            'store'             =>  $order->getStoreId(),
-            'shipping_address'  =>  is_null($shippingAddress)   ? null : $shippingAddress->getId(),
-            'billing_address'   =>  is_null($billingAddress)    ? null : $billingAddress->getId(),
-            'state'             =>  $order->getState(),
-            'status'            =>  $order->getStatus(),
-            'weight'            =>  $order->getWeight(),
-            'quantity'          =>  $order->getTotalQtyOrdered(),
-            'currency'          =>  $order->getOrderCurrencyCode(),
-            'shipping_cost'     =>  $order->getShippingAmount(),
-            'tax'               =>  $order->getTaxAmount(),
-            'ip_address'        =>  $order->getRemoteIp(),
+            'quote'                 =>  $order->getQuoteId(),
+            'customer'              =>  $order->getCustomerId(),
+            'webstore'              =>  $order->getStoreId(),
+            'shipping_address'      =>  is_null($shippingAddress)   ? null : $shippingAddress->getId(),
+            'billing_address'       =>  is_null($billingAddress)    ? null : $billingAddress->getId(),
+            'state'                 =>  $order->getState(),
+            'status'                =>  $order->getStatus(),
+            'weight'                =>  $order->getWeight(),
+            'quantity'              =>  $order->getTotalQtyOrdered(),
+            'currency'              =>  $order->getOrderCurrencyCode(),
+            'shipping_cost'         =>  $order->getShippingAmount(),
+            'tax'                   =>  $order->getTaxAmount(),
+            'ip_address'            =>  $order->getRemoteIp(),
+            'customer_gender'       =>  $gender,
+            'customer_groupname'    =>  $order->getCustomerGroupname(),
+            'customer_subscription' =>  $order->getCustomerSubscription(),
+            'customer_email'        =>  $order->getCustomerEmail(),
+            'customer_firstname'    =>  $order->getCustomerFirstname(),
+            'customer_middlename'   =>  $order->getCustomerMiddlename(),
+            'customer_prefix'       =>  $order->getCustomerPrefix(),
+            'customer_lastname'     =>  $order->getCustomerLastname(),
         ));
     }
 
@@ -346,7 +360,7 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
             'email'     =>  $subscriber->getEmail(),
             'modified'  =>  $subscriber->getChangeStatusAt(),
             'status'    =>  $this->subscriptionStatus($subscriber),
-            'store'     =>  $subscriber->getStoreId(),
+            'webstore'  =>  $subscriber->getStoreId(),
         ));
     }
 
@@ -374,19 +388,15 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
         // if we do not get a gender something went wrong (or we don't know the gender)
         if (empty($gender)) $gender = null;
 
-        // get subscriber instance linked with current customer
-        $subscriber = Mage::getModel('newsletter/subscriber')->loadByEmail($customer->getEmail());
-
         // store the customer
         $this->request->put("magento/customer/{$customer->getId()}", array(
-            'store'         =>  $customer->getStoreId(),
+            'webstore'      =>  $customer->getStoreId(),
             'firstname'     =>  $customer->getFirstname(),
             'prefix'        =>  $customer->getPrefix(),
             'middlename'    =>  $customer->getMiddlename(),
             'lastname'      =>  $customer->getLastname(),
             'email'         =>  $customer->getEmail(),
             'gender'        =>  $gender,
-            'subscribed'    =>  $this->subscriptionStatus($subscriber),
         ));
     }
 
