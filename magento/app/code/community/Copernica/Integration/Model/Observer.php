@@ -432,4 +432,54 @@ class Copernica_Integration_Model_Observer
         }
     }
 
+    /**
+     *  Method for the followitn events:
+     *
+     *  'catalog_category_save_commit_after'
+     *  'catalog_category_tree_move_after'
+     *
+     *  This is triggered when a category is stored.
+     *
+     *  @param  Varien_Event_Observer
+     */ 
+    public function categoryModified(Varien_Event_Observer $observer)
+    {
+        // if the plugin is not enabled, skip this
+        if (!$this->enabled()) return;
+
+        // get category instance
+        $category = $observer->getEvent()->getCategory();
+
+        // do we have a valid category
+        if (is_object($category) && $category->getId())
+        {
+            // add this category to synchronize queue
+            $this->synchronize($category);
+        }
+    }
+
+    /**
+     *  Method for the followitn events:
+     *
+     *  'catalog_category_save_commit_after'
+     *
+     *  This is triggered when a category is removed.
+     *
+     *  @param  Varien_Event_Observer
+     */ 
+    public function categoryRemoved(Varien_Event_Observer $observer)
+    {
+        // if the plugin is not enabled, skip this
+        if (!$this->enabled()) return;
+
+        // get category instance
+        $category = $observer->getEvent()->getCategory();
+
+        // do we have a valid category
+        if (is_object($category) && $category->getId())
+        {
+            // add this category to synchronize queue
+            $this->synchronize($category, 'remove');
+        }
+    }
 }

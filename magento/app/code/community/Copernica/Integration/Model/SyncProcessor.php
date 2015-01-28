@@ -38,6 +38,7 @@ class Copernica_Integration_Model_SyncProcessor
      */
     private $models = array (
         'core/store',
+        'catalog/category',
         'customer/customer', 
         'catalog/product', 
         'sales/quote', 

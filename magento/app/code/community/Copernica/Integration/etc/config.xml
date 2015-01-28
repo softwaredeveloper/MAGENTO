@@ -67,14 +67,14 @@
                     </integration_observer>
                 </observers>
             </sales_quote_item_save_after>
-            <sales_order_place_after>
+            <sales_order_save_after>
                 <observers>
                     <integration_observer>
                         <class>integration/observer</class>
                         <method>orderModified</method>
                     </integration_observer>
                 </observers>
-            </sales_order_place_after>
+            </sales_order_save_after>
             <sales_order_item_save_after>
                 <observers>
                     <integration_observer>
@@ -139,6 +139,30 @@
                     </integration_observer>
                 </observers>
             </catalog_controller_product_view>
+            <catalog_category_save_commit_after>
+                <observers>
+                    <integration_observer>
+                        <class>integration/observer</class>
+                        <method>categoryModified</method>
+                    </integration_observer>
+                </observers>
+            </catalog_category_save_commit_after>
+            <catalog_category_tree_move_after>
+                <observers>
+                    <integration_observer>
+                        <class>integration/observer</class>
+                        <method>categoryModified</method>
+                    </integration_observer>
+                </observers>
+            </catalog_category_tree_move_after>
+            <catalog_category_delete_before>
+                <observers>
+                    <integration_observer>
+                        <class>integration/observer</class>
+                        <method>categoryRemoved</method>
+                    </integration_observer>
+                </observers>
+            </catalog_category_delete_before>
         </events>
         <resources>
             <integration_setup>

@@ -121,6 +121,21 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
             case 'core/store': foreach ($collection as $store) $this->storeStore($store); break;
 
             /** 
+             *  Category collection does not load all needed category data. Thus 
+             *  we have to realod category object to fetch additional data.
+             */
+            case 'catalog/category':
+                foreach ($collection as $category) 
+                {
+                    // reaload category
+                    $category = Mage::getModel('catalog/category')->load($category->getId());
+
+                    // store reloaded category
+                    $this->storeCategory($category);                    
+                }
+                break;
+
+            /** 
              *  Products collection does load product objects with some of the
              *  needed data, that is why we want to reload product instance
              *  via Mage::getModel() method.
@@ -195,6 +210,7 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
             'modified'      =>  $product->getUpdatedAt(),
             'uri'           =>  $product->getProductUrl(),
             'image'         =>  $product->getImageUrl(),
+            'categories'    =>  $product->getCategoryIds(),
         ));
     }
 
@@ -456,7 +472,31 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
             'websiteId'     => $website->getId(),
             'websiteName'   => $website->getName(),
             'groupId'       => $group->getId(),
-            'groupName'     => $group->getName()
+            'groupName'     => $group->getName(),
+            'rootCategory'  => $store->getRootCategoryId(),
         ));
+    }
+
+    /**
+     *  Store magento category in copernica
+     *  @param  Mage_Catalog_Model_Category
+     */
+    public function storeCategory(Mage_Catalog_Model_Category $category)
+    {
+        $this->request->put("magento/category/{$category->getId()}", array(
+            'name'      =>  $category->getName(),
+            'created'   =>  $category->getCreatedAt(),
+            'modified'  =>  $category->getUpdatedAt(),
+            'parent'    =>  $category->getParentCategory()->getId(),
+        ));
+    }
+
+    /**
+     *  Remove magento category in copernica
+     *  @param Mage_Catalog_Model_Category
+     */
+    public function removeCategory(Mage_Catalog_Model_Category $category)
+    {
+        $this->request->delete("magento/category/{$category->getId()}");
     }
 }
