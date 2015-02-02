@@ -123,6 +123,22 @@
                     </integration_observer>
                 </observers>
             </customer_address_save_after>
+            <sales_order_address_save_after>
+                <observers>
+                    <integration_observer>
+                        <class>integration/observer</class>
+                        <method>addressModified</method>
+                    </integration_observer>
+                </observers>
+            </sales_order_address_save_after>
+            <sales_quote_address_save_after>
+                <observers>
+                    <integration_observer>
+                        <class>integration/observer</class>
+                        <method>addressModified</method>
+                    </integration_observer>
+                </observers>
+            </sales_quote_address_save_after>
             <catalog_product_save_after>
                 <observers>
                     <integration_observer>
@@ -231,7 +247,7 @@
     <crontab>
         <jobs>
             <integration_process_queue>
-                <schedule><cron_expr>*/5 * * * *</cron_expr></schedule>
+                <schedule><cron_expr>*/1 * * * *</cron_expr></schedule>
                 <run><model>integration/QueueProcessor::processQueue</model></run>
             </integration_process_queue>
         </jobs>

@@ -152,15 +152,17 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
                 break;
 
             /** 
-             *  Address collection does load address objects with some of the
-             *  needed data, that is why we want to reload address instance
-             *  via Mage::getModel() method.
+             *  Addresses loaded from collections don't contain all needed data.
+             *  So, to ensure that we have all needed data we have to force 
+             *  Magento to fetch full data set.
              */
+            case 'sales/order_address':
+            case 'sales/quote_address':
             case 'customer/address': 
                 foreach ($collection as $address)
                 {
                     // reload address data
-                    $address = Mage::getModel('customer/address')->load($address->getId());
+                    $address = Mage::getModel($resourceName)->load($address->getId());
 
                     // store address
                     $this->storeAddress($address);  
@@ -263,16 +265,33 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
      */
     public function storeQuoteItem(Mage_Sales_Model_Quote_item $item)
     {
-        // load the accompanying quote by id, since the getQuote method
-        // seems to be severely borken in some magento versions
-        // Quote is a store entity. And just cause of that magento doing funky
-        // stuff when fetching quote just by id. To fetch quote with any kind 
-        // of useful data we have to explicitly say to magento that we want a 
-        // quote without store.
+        /**
+         *  Load the accompanying quote by id, since the getQuote method
+         *  seems to be severely borken in some magento versions
+         *  Quote is a store entity. And just cause of that magento doing funky
+         *  stuff when fetching quote just by id. To fetch quote with any kind 
+         *  of useful data we have to explicitly say to magento that we want a 
+         *  quote without store.
+         */
         $quote = Mage::getModel('sales/quote')->loadByIdWithoutStore($item->getQuoteId());
 
         // item-quote relation is super broken
         $item->setQuote($quote);
+
+        /**
+         *  Something about magento address handling. It's possible to set 
+         *  shipping address for each quote item to completely different places.
+         *  The 'multi shipping'. Really nice feature. Thus, you can not ask
+         *  the quote item to where it will be shipped. Instead you have to 
+         *  ask the quote address to where item will be shipped (by ::getItemByQuoteItemId())
+         *  and then you will be given a address object or false value when 
+         *  item does not have any special destination. 
+         *  For regular person, false value would mean that item does not have 
+         *  a shipping destination.
+         */
+
+        // get quote item shipping address
+        $quoteItemShippingAddress = $quote->getShippingAddress()->getItemByQuoteItemId($item->getId());
 
         // store the quote item
         $this->request->put("magento/quoteitem/{$item->getId()}", array(
@@ -282,6 +301,7 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
             'price'     =>  $item->getPrice(),
             'currency'  =>  $quote->getQuoteCurrencyCode(),
             'weight'    =>  $item->getWeight(),
+            'address'   =>  is_object($quoteItemShippingAddress) ? $quoteItemShippingAddress->getAddress()->getId() : null,
         ));
     }
 
@@ -307,8 +327,8 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
             'quote'                 =>  $order->getQuoteId(),
             'customer'              =>  $order->getCustomerId(),
             'webstore'              =>  $order->getStoreId(),
-            'shipping_address'      =>  is_null($shippingAddress)   ? null : $shippingAddress->getId(),
-            'billing_address'       =>  is_null($billingAddress)    ? null : $billingAddress->getId(),
+            'shipping_address'      =>  is_object($shippingAddress)   ? $shippingAddress->getId()   : null,
+            'billing_address'       =>  is_object($billingAddress)    ? $billingAddress->getId()    : null,
             'state'                 =>  $order->getState(),
             'status'                =>  $order->getStatus(),
             'weight'                =>  $order->getWeight(),
@@ -430,18 +450,75 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
     /**
      *  Store an address in copernica
      *
-     *  @param  Mage_Customer_Model_Address the address that was added or modified
+     *  @param  Mage_Customer_Model_Address_Abstract the address that was added or modified
      */
-    public function storeAddress(Mage_Customer_Model_Address $address)
+    public function storeAddress(Mage_Customer_Model_Address_Abstract $address)
     {
-        // retrieve the customer this address belongs to
-        $customer = $address->getCustomer();
+        /**
+         *  Magento has a little mess with address handling. Basically there 
+         *  can be several types of address that will have common structure. 
+         *  Semantically they mean same this: a real place in the world. It would
+         *  be wise to put them inside one table and have only one class that will
+         *  describe such basic thing. Magento core team decided to separate 
+         *  such entities and make separata ID sequences for customer, order and
+         *  quote address (maybe there are more, but they don't concern us right now),
+         *  making whole address handling very ambiguous.
+         *  To make things easier we will limit ourselfs to customer, order and quote 
+         *  address and assign them a 'type' that will describe from what kind
+         *  of magento address copernica address came. 
+         *  If we will encounter any other type of address we will just ignore it
+         *  it since we don't have any means ofhadnling such.
+         *
+         *  And since customer, order, quote flavors of common address classes
+         *  are pretty much separate they have different interfaces for fetching 
+         *  common data like customer id or shipping and billing flags. Thus we
+         *  have to parse them in correct manner.
+         */ 
+        if ($address instanceof Mage_Customer_Model_Address)
+        {
+            // get customer instance
+            $customer = $address->getCustomer();
+
+            // set address type, customer, billing and shipping flag
+            $metaData = array (
+                'type'              => 'customer',
+                'billingAddress'    => $customer->getDefaultBilling() == $address->getId(),
+                'deliveryAddress'   => $customer->getDefaultShipping() == $address->getId(),
+                'customer'          => $customer->getId(),
+            );
+        }
+        else if ($address instanceof Mage_Sales_Model_Order_Address)
+        {
+            // get order instance
+            $order = $address->getOrder();
+
+            // set address type, customer, billing and shipping flag
+            $metaData = array( 
+                'type'              => 'order',
+                'billingAddress'    => $order->getData('billing_address_id') == $address->getId(),
+                'deliveryAddress'   => $order->getData('shipping_address_id') == $address->getId(),
+                'customer'          => $order->getData('customer_id'),
+            );  
+        } 
+        else if ($address instanceof Mage_Sales_Model_Quote_Address)
+        {
+            // get quote instance
+            $quote = $address->getQuote();
+
+            // set address type, customer, billing and shipping flag
+            $metaData = array(
+                'type'              => 'quote',
+                'billingAddress'    => $address->getData('address_type') == 'billing',
+                'deliveryAddress'   => $address->getData('address_type') == 'shipping',
+                'customer'          => $address->getData('customer_id')
+            );  
+        } 
+
+        // we have some unknown address type. We will not do anything good with it
+        else return;
 
         // store the address
-        $this->request->put("magento/address/{$address->getId()}", array(
-            'billingAddress'    =>  $customer->getData('default_billing') == $address->getId(),
-            'deliveryAddress'   =>  $customer->getData('default_shipping') == $address->getid(),
-            'customer'          =>  $customer->getId(),
+        $this->request->put("magento/address/{$address->getId()}", array_merge( $metaData, array(
             'country'           =>  (string)$address->getCountry(),
             'street'            =>  (string)$address->getStreetFull(),
             'city'              =>  (string)$address->getCity(),
@@ -450,7 +527,7 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
             'phone'             =>  (string)$address->getTelephone(),
             'fax'               =>  (string)$address->getFax(),
             'company'           =>  (string)$address->getCompany(),
-        ));
+        )));
     }
 
     /**

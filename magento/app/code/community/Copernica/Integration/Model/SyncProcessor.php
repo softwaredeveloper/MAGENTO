@@ -39,13 +39,15 @@ class Copernica_Integration_Model_SyncProcessor
     private $models = array (
         'core/store',
         'catalog/category',
-        'customer/customer', 
-        'catalog/product', 
-        'sales/quote', 
-        'sales/quote_item', 
-        'sales/order', 
-        'sales/order_item', 
-        'newsletter/subscriber', 
+        'customer/customer',
+        'catalog/product',
+        'sales/quote_address',
+        'sales/quote',
+        'sales/quote_item',
+        'sales/order_address',
+        'sales/order',
+        'sales/order_item',
+        'newsletter/subscriber',
         'customer/address',
     );
 
@@ -267,6 +269,7 @@ class Copernica_Integration_Model_SyncProcessor
             case 'Mage_Sales_Model_Resource_Quote_Item_Collection': return 'item_id';
             case 'Mage_Sales_Model_Resource_Order_Item_Collection': return 'item_id';
             case 'Mage_Newsletter_Model_Resource_Subscriber_Collection': return 'subscriber_id';
+            case 'Mage_Sales_Model_Resource_Quote_Address_Collection': return 'address_id';
             default: return 'entity_id';
         }
     }
