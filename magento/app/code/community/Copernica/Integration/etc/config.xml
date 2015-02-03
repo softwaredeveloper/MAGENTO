@@ -232,7 +232,38 @@
                 </Copernica_Integration>
             </modules>
         </translate>
+        <acl>
+            <resources>
+                <admin>
+                    <children>
+                        <system>
+                            <children>
+                                <config>
+                                    <children>
+                                        <copernica_options>
+                                            <title>Copernica general configuration</title>
+                                        </copernica_options>
+                                    </children>
+                                </config>
+                            </children>
+                        </system>
+                    </children>
+                </admin>
+            </resources>
+        </acl>
     </adminhtml>
+    <default>
+        <copernica_options>
+            <apiconnection>
+                <!-- The default copernica API address. NOTE that it's prefered to make local overrides rather than editing this file. -->
+                <apihost>https://api.copernica.com</apihost>
+            </apiconnection>
+            <apistorage>
+                <!-- The default output file from QueueProcessor. -->
+                <reportfile>var/copernica/report.json</reportfile>
+            </apistorage>
+        </copernica_options>
+    </default>
     <admin>
         <routers>
             <adminhtml>
@@ -247,7 +278,7 @@
     <crontab>
         <jobs>
             <integration_process_queue>
-                <schedule><cron_expr>*/1 * * * *</cron_expr></schedule>
+                <schedule><cron_expr>*/5 * * * *</cron_expr></schedule>
                 <run><model>integration/QueueProcessor::processQueue</model></run>
             </integration_process_queue>
         </jobs>

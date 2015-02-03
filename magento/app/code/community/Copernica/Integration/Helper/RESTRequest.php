@@ -33,6 +33,16 @@ class Copernica_Integration_Helper_RESTRequest extends Mage_Core_Helper_Abstract
     protected $multi = null;
 
     /**
+     *  The base Url to copernica REST API. In most of the cases we will be 
+     *  using standard servers (https://api.copernica.com). Thus, in some 
+     *  edge cases an alternative server can be used (has to be consulted
+     *  with copernica support team)
+     *  
+     *  @var    string
+     */
+    protected $apiUrl;
+
+    /**
      *  Constructor
      *
      *  We use normal PHP constructor cause Helpers are not childs of
@@ -42,6 +52,9 @@ class Copernica_Integration_Helper_RESTRequest extends Mage_Core_Helper_Abstract
     {
         // store the access token for quick access
         $this->accessToken = Mage::helper('integration/config')->getAccessToken();
+
+        // get api URL and store it inside local property
+        $this->apiUrl = Mage::getStoreConfig('copernica_options/apiconnection/apihost');
     }
 
     /**
@@ -138,7 +151,7 @@ class Copernica_Integration_Helper_RESTRequest extends Mage_Core_Helper_Abstract
         ));
 
         // set the URI we need to open
-        curl_setopt($curl, CURLOPT_URL, "https://api.copernica.com/{$request}{$this->buildQueryString($query)}");
+        curl_setopt($curl, CURLOPT_URL, "{$this->apiUrl}/{$request}{$this->buildQueryString($query)}");
 
         // return the fresh curl instance
         return $curl;

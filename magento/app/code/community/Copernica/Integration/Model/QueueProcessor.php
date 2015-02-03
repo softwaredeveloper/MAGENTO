@@ -64,6 +64,15 @@ class Copernica_Integration_Model_QueueProcessor
     private $api = null;
 
     /**
+     *  Reporter for generating processor reports. By default in 
+     *  {{base_dir}}/var/copernica/report.json will be stored results of each 
+     *  run.
+     *
+     *  @var Copernica_Integration_Model_QueueReporter
+     */
+    private $reporter;
+
+    /**
      *  Constructor
      */
     public function __construct()
@@ -76,6 +85,9 @@ class Copernica_Integration_Model_QueueProcessor
 
         // connect to the API
         $this->api = Mage::helper('integration/api');
+
+        // create new reporter instance
+        $this->reporter = Mage::getModel('integration/QueueReporter');
     }
 
     /**
@@ -215,6 +227,9 @@ class Copernica_Integration_Model_QueueProcessor
 
             // delete the item from the queue
             $item->delete();
+
+            // store success
+            $this->reporter->storeSuccess();
         }
 
         // catch all exceptions
@@ -225,6 +240,9 @@ class Copernica_Integration_Model_QueueProcessor
 
             // set result message on item and set result time
             $item->setResult($exception->getMessage())->setResultTime(date('Y-m-d H:i:s'));
+
+            // store error
+            $this->reporter->storeFailure($exception->getMessage(), array( 'resource' => $resourceName, 'action' => $action ));
         }
     }
 

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+    <tabs>
+        <copernica translate="label" module="integration">
+            <label>Copernica Marketing Software</label>
+            <sort_order>99999</sort_order>
+        </copernica>
+    </tabs>
+    <sections>
+        <copernica_options translate="label" module="integration">
+            <label>Integration</label>
+            <tab>copernica</tab>
+            <sort_order>1000</sort_order>
+            <show_in_default>1</show_in_default>
+            <show_in_website>1</show_in_website>
+            <show_in_store>1</show_in_store>      
+            <groups>
+                <apiconnection translate="label" module="integration">
+                    <label>API connection options</label>
+                    <frontend_type>text</frontend_type>
+                    <sort_order>1</sort_order>
+                    <show_in_default>1</show_in_default>
+                    <show_in_website>1</show_in_website>
+                    <show_in_store>1</show_in_store>
+                    <fields>
+                        <apihost translate="label">
+                            <label>API server address</label>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>1</sort_order>
+                            <comment><![CDATA[Copernica API server. Change this value only after consultation with Copernica employee.]]></comment>
+                            <show_in_default>1</show_in_default>
+                        </apihost>
+                    </fields>
+                </apiconnection>
+                <apistorage translate="label" module="integration">
+                    <label>API storage options</label>
+                    <frontend_type>text</frontend_type>
+                    <sort_order>2</sort_order>
+                    <show_in_default>1</show_in_default>
+                    <show_in_website>1</show_in_website>
+                    <show_in_store>1</show_in_store>
+                    <fields>
+                        <reportfile translate="label">
+                            <label>Report file</label>
+                            <comment><![CDATA[Report file is a JSON file with results of last 100 synchronization runs. It will contain data like synchronization time, number of items synchronised or additional informations. <br> This path will be relative to magento root directory.]]></comment>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>1</sort_order>
+                            <show_in_default>1</show_in_default>
+                        </reportfile>
+                    </fields>
+                </apistorage>
+            </groups>
+        </copernica_options>
+    </sections>
+</config>
