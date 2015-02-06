@@ -254,6 +254,10 @@
     </adminhtml>
     <default>
         <copernica_options>
+            <apisync>
+                <!-- by default integration is enabled for every type of website/store. User will have to explicitly say that he does not want to sync specific store --> 
+                <enabled>enable</enabled>
+            </apisync>
             <apiconnection>
                 <!-- The default copernica API address. NOTE that it's prefered to make local overrides rather than editing this file. -->
                 <apihost>https://api.copernica.com</apihost>

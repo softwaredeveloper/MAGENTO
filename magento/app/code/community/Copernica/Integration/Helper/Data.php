@@ -59,6 +59,29 @@ class Copernica_Integration_Helper_Data extends Mage_Core_Helper_Abstract
     }
 
     /**
+     *  Get last run report.
+     *  
+     *  @return Copernica_Integration_Model_QueueReport
+     */
+    public function getLastReport()
+    {
+        // fetch report file
+        $reportFile = Mage::getBaseDir().DIRECTORY_SEPARATOR.Mage::getStoreConfig('copernica_options/apistorage/reportfile');
+
+        // check if report files exists.
+        if (!is_file($reportFile)) return null;
+
+        // get json data
+        $data = json_decode(file_get_contents(($reportFile)));  
+
+        // check if we have last run or not
+        if (count($data) == 0) return null;
+
+        // create a QueueReport instance with last run data
+        return Mage::getModel('integration/QueueReport', end($data));
+    }
+
+    /**
      *  Is the Copernica module enabled?
      *  @return boolean
      */

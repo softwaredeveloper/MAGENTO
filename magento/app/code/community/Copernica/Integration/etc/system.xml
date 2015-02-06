@@ -15,31 +15,39 @@
             <show_in_website>1</show_in_website>
             <show_in_store>1</show_in_store>      
             <groups>
-                <apiconnection translate="label" module="integration">
-                    <label>API connection options</label>
-                    <frontend_type>text</frontend_type>
-                    <sort_order>1</sort_order>
+                <apisync translate="label" module="integration">
+                    <label>API synchronization options</label>
+                    <expanded>1</expanded>
+                    <sort_order>10</sort_order>
                     <show_in_default>1</show_in_default>
                     <show_in_website>1</show_in_website>
                     <show_in_store>1</show_in_store>
                     <fields>
-                        <apihost translate="label">
-                            <label>API server address</label>
-                            <frontend_type>text</frontend_type>
+
+                        <!-- enabled/disabled flag -->
+                        <enabled translate="label">
+                            <label>Enabled</label>
+                            <comment></comment>
+                            <frontend_type>select</frontend_type>
+                            <source_model>adminhtml/system_config_source_enabledisable</source_model>
                             <sort_order>1</sort_order>
-                            <comment><![CDATA[Copernica API server. Change this value only after consultation with Copernica employee.]]></comment>
                             <show_in_default>1</show_in_default>
-                        </apihost>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                        </enabled>
                     </fields>
-                </apiconnection>
+                </apisync>
                 <apistorage translate="label" module="integration">
                     <label>API storage options</label>
-                    <frontend_type>text</frontend_type>
-                    <sort_order>2</sort_order>
+                    <!-- it appears that this one has problems on some versions -->
+                    <expanded>0</expanded>
+                    <sort_order>20</sort_order>
                     <show_in_default>1</show_in_default>
                     <show_in_website>1</show_in_website>
                     <show_in_store>1</show_in_store>
                     <fields>
+
+                        <!-- report file location -->
                         <reportfile translate="label">
                             <label>Report file</label>
                             <comment><![CDATA[Report file is a JSON file with results of last 100 synchronization runs. It will contain data like synchronization time, number of items synchronised or additional informations. <br> This path will be relative to magento root directory.]]></comment>
@@ -49,6 +57,39 @@
                         </reportfile>
                     </fields>
                 </apistorage>
+                <apiconnection translate="label" module="integration">
+                    <label>API connection options</label>
+                    <!-- it appears that this one has problems on some versions -->
+                    <expanded>0</expanded>
+                    <sort_order>30</sort_order>
+                    <show_in_default>1</show_in_default>
+                    <show_in_website>1</show_in_website>
+                    <show_in_store>1</show_in_store>
+                    <fields>
+                        <!-- Access token field is hidden from user -->
+                        <apiaccesstoken>
+                            <show_in_default>0</show_in_default>
+                            <show_in_website>0</show_in_website>
+                            <show_in_store>0</show_in_store>
+                        </apiaccesstoken>
+
+                        <!-- Account info field is hidden from user -->
+                        <apiaccount>
+                            <show_in_default>0</show_in_default>
+                            <show_in_website>0</show_in_website>
+                            <show_in_store>0</show_in_store>
+                        </apiaccount>
+
+                        <!-- API server address -->
+                        <apihost translate="label">
+                            <label>API server address</label>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>1</sort_order>
+                            <comment><![CDATA[Copernica API server. Change this value only after consultation with Copernica employee.]]></comment>
+                            <show_in_default>1</show_in_default>
+                        </apihost>
+                    </fields>
+                </apiconnection>
             </groups>
         </copernica_options>
     </sections>

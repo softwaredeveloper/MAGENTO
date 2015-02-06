@@ -27,8 +27,6 @@
 
 /**
  *  This class will process task queue.
- *
- *  @todo refactor this class.
  */
 class Copernica_Integration_Model_QueueProcessor
 {
@@ -77,32 +75,11 @@ class Copernica_Integration_Model_QueueProcessor
      */
     public function __construct()
     {
-        // get config into local scope
-        $config = Mage::helper('integration/config');
-
-        // update the last start time
-        $config->setLastStartTimeCronjob(date("Y-m-d H:i:s"));
-
         // connect to the API
         $this->api = Mage::helper('integration/api');
 
         // create new reporter instance
         $this->reporter = Mage::getModel('integration/QueueReporter');
-    }
-
-    /**
-     *  We want to make some final actions when this processor is beeing destroyed.
-     */
-    public function __destruct()
-    {
-        // get config into local scope
-        $config = Mage::helper('integration/config');
-
-        // update the last start time
-        $config->setLastEndTimeCronjob(date("Y-m-d H:i:s"));
-
-        // set how many items we did process in last run
-        $config->setLastCronjobProcessedTasks($this->processedTasks);
     }
 
     /**

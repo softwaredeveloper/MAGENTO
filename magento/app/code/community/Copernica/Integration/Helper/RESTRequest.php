@@ -51,7 +51,7 @@ class Copernica_Integration_Helper_RESTRequest extends Mage_Core_Helper_Abstract
     public function __construct()
     {
         // store the access token for quick access
-        $this->accessToken = Mage::helper('integration/config')->getAccessToken();
+        $this->accessToken = Mage::getStoreConfig('copernica_options/apiconnection/apiaccesstoken');
 
         // get api URL and store it inside local property
         $this->apiUrl = Mage::getStoreConfig('copernica_options/apiconnection/apihost');

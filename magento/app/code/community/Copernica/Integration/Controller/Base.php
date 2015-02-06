@@ -43,9 +43,6 @@ class Copernica_Integration_Controller_Base extends Mage_Adminhtml_Controller_Ac
 
         // check current queue time
         $this->checkQueueTime($queue);
-
-        // we want to check api access
-        $this->checkApiAccess();
     }
 
     /**
@@ -85,20 +82,5 @@ class Copernica_Integration_Controller_Base extends Mage_Adminhtml_Controller_Ac
 
         // alert admin
         Mage::getSingleton('adminhtml/session')->addWarning(Mage::helper('integration')->__("There is still a modification of %s that is not synchronized with Copernica.", $printableTime));
-    }
-
-    /**
-     *  This function will check if we have an access to API.
-     */
-    private function checkApiAccess()
-    {
-        // try to get access token from config file
-        $accessToken = Mage::helper('integration/config')->getAccessToken();
-
-        // if we have someting in access token we will assume that it's correct
-        if ($accessToken) return;
-
-        // inform admin about missing access token
-        // Mage::getSingleton('adminhtml/session')->addWarning('There is no access token for API communication.');
     }
 }

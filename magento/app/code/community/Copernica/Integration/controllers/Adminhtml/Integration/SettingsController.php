@@ -83,43 +83,14 @@ class Copernica_Integration_Adminhtml_integration_SettingsController extends Cop
             return $this->_redirect('*/*', array('response' => 'authorize-error'));
         }
 
-        // get the config helper and update the access token
-        $config = Mage::helper('integration/config');
-        $config->setAccessToken($accessToken);
+        // store access token inside magento config system
+        Mage::getConfig()->saveConfig('copernica_options/apiconnection/apiaccesstoken', $accessToken);
 
-        // retrieve account info
+        // retrieve account info and store account name inside hidden config
         $info = Mage::helper('integration/api')->account();
-
-        // store account info inside config
-        $config->setAccountName($info['name']);
-        $config->setCompanyName($info['company']);
-
+        Mage::getConfig()->saveConfig('copernica_options/apiconnection/apiaccount', $info['name']);
+        
         // return this
         return $this->_redirect('*/*', array('response' => 'new-access-token'));
-    }
-
-    /**
-     *  sendAction() takes care of checking and storing the login details to the SOAP
-     *  It also performs checks on database and in case it doesn't exists, it will create it.
-     *  @return Object  Returns the '_redirect' object that loads the parent page
-     */
-    public function sendAction()
-    {
-        // get post variables
-        $post = $this->getRequest()->getPost();
-
-        // get config helper
-        $config = Mage::helper('integration/config');
-
-        // what stores do we want to synchronize
-        switch ($post['store-synchronize'])
-        {
-            case 'none':    $config->setEnabledStores(array());                 break;
-            case 'all':     $config->setEnabledStores(null);                    break;
-            case 'some':    $config->setEnabledStores((array)$post['store']);   break;
-        }
-
-        // redirect to same page
-        return $this->_redirect('*/*');
     }
 }

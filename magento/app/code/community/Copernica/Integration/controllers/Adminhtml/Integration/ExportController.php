@@ -128,8 +128,6 @@ class Copernica_Integration_Adminhtml_integration_ExportController extends Coper
         }
         else
         {
-            $config = Mage::helper('integration/config');
-
             // The start synch token must be added to the queue
             $queue = Mage::getModel('integration/queue')
                 ->setAction('start_sync')

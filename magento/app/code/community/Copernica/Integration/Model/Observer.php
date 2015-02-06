@@ -39,8 +39,8 @@ class Copernica_Integration_Model_Observer
         // get current store Id
         $currentStoreId = Mage::app()->getStore()->getId();
 
-        // check if current store is enabled stores
-        return Mage::helper('integration/config')->isEnabledStore($currentStoreId);
+        // return store enabled option
+        return Mage::getStoreConfig('copernica_options/apisync/enabled', $currentStoreId);
     }
 
     /**
@@ -393,7 +393,11 @@ class Copernica_Integration_Model_Observer
      */
     public function storeModified(Varien_Event_Observer $observer)
     {
-        // if the plugin is not enabled, skip this
+        /**
+         *  We ignore this action only on one occassion: when whole extension
+         *  is disabled. When particular store is disabled we still want to
+         *  sync it's data,
+         */
         if (!$this->enabled()) return;
 
         // do we have a valid store
@@ -444,7 +448,12 @@ class Copernica_Integration_Model_Observer
      */ 
     public function categoryModified(Varien_Event_Observer $observer)
     {
-        // if the plugin is not enabled, skip this
+        /**
+         *  We don't sync this action only on one occassion: when the whole
+         *  integration is disabled. We do ignore stores enable/disable states
+         *  cause categories are pretty much global entities that don't care 
+         *  about stores.
+         */
         if (!$this->enabled()) return;
 
         // get category instance
@@ -469,7 +478,12 @@ class Copernica_Integration_Model_Observer
      */ 
     public function categoryRemoved(Varien_Event_Observer $observer)
     {
-        // if the plugin is not enabled, skip this
+        /**
+         *  We don't sync this action only on one occassion: when the whole
+         *  integration is disabled. We do ignore stores enable/disable states
+         *  cause categories are pretty much global entities that don't care 
+         *  about stores.
+         */
         if (!$this->enabled()) return;
 
         // get category instance
