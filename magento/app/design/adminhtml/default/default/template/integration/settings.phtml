@@ -4,10 +4,6 @@
  *  Copernica Marketing Software
  *  http://www.copernica.com
  */
-
-// get config into local scope
-$_config = Mage::helper('integration/config');
-
 ?>
 
 <script type="text/javascript">
@@ -19,18 +15,7 @@ Event.observe(window, 'load', function() {
     $('synchronize_save').on('click', function(event) {
         $('synchronize_form').submit();
     });
-
-    // when user want to sync only some of the store we want to show him list of
-    // stores to filter
-    $('stores-to-sync').on('change', function (event) {
-        // we want to change only when proper radio is clicked
-        if (!event.target.name || event.target.name != 'store-synchronize') return;
-
-        // when 'some' radio is clicked we can show stores filter
-        if (event.target.value == 'some') $('stores-filter').style.display = 'block';
-        else $('stores-filter').style.display = 'none';
-    });
-
+    
 }, false);
 
 </script>
@@ -65,7 +50,7 @@ Event.observe(window, 'load', function() {
                                 </td>
                                 <td>
                                     <?php
-                                        if (!$_config->getAccessToken())
+                                        if (!Mage::getStoreConfig('copernica_options/apiconnection/apiaccesstoken'))
                                         {
                                             echo $this->__("Magento is not authorized with a Copernica account.");
                                             ?>
@@ -77,7 +62,7 @@ Event.observe(window, 'load', function() {
                                         }
                                         else
                                         {
-                                               echo $this->__("Magento is authorized to account '%s'", $_config->getAccountName());
+                                               echo $this->__("Magento is authorized to account '%s'", Mage::getStoreConfig('copernica_options/apiconnection/apiaccount'));
                                             ?>
                                                 <br/>
                                                 <a href="<?php echo $this->getAuthorizeURI(); ?>">
@@ -91,70 +76,6 @@ Event.observe(window, 'load', function() {
                         </tbody>
                     </table>
                 </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="entry-edit">
-        <?php echo $this->getBlockHtml('formkey'); ?>
-        <div class="entry-edit-head">
-            <h4 class="icon-head head-edit-form fieldset-legend">
-                <?php echo $this->__("Stores settings"); ?>
-            </h4>
-        </div>
-
-        <div class="fieldset">
-            <div class="hor-scroll">
-                <table cellspacing="0" class="form-list">
-                    <tbody>
-                        <tr>
-                            <td class="label">
-                                <?php echo $this->__("Stores to synchronize"); ?>
-                            </td>
-                            <td class="value" id="stores-to-sync">
-                                <input type="radio" name="store-synchronize" id="store-synchronize-all" value="all"<?php if (is_null($_config->getEnabledStores())) { ?> checked <?php } ?>>
-                                <label for="store-synchronize-all">
-                                    <?php echo $this->__("Synchronize all stores"); ?>
-                                </label>
-                                <br/>
-
-                                <input type="radio" name="store-synchronize" id="store-synchronize-none" value="none"<?php if ($_config->getEnabledStores() === array()) { ?> checked <?php } ?>>
-                                <label for="store-synchronize-none">
-                                    <?php echo $this->__("Disable synchronization"); ?>
-                                </label>
-                                <br/>
-
-                                <input type="radio" name="store-synchronize" id="store-synchronize-some" value="some"<?php if ($_config->getEnabledStores()) { ?> checked <?php } ?>>
-                                <label for="store-synchronize-some">
-                                    <?php echo $this->__("Synchronize some stores"); ?>
-                                </label>
-                                <br/>
-
-                                <br/>
-                                <div id="stores-filter" <?php if ($_config->getEnabledStores() || $_config->getEnabledStores() !== array()) { ?> style="display: none;" <?php } ?>>
-                                    <?php
-                                        foreach(Mage::app()->getWebsites() as $website){
-                                            foreach($website->getGroups() as $group){
-                                                foreach($group->getStores() as $store) {
-
-                                                    $enabledStore = is_array($_config->getEnabledStores()) && in_array($store->getId(), $_config->getEnabledStores());
-
-                                                    ?>
-                                                        <input type="checkbox" name="store[]" id="chk-store-<?php echo $store->getId(); ?>" value="<?php echo $store->getId(); ?>" <?php if ($enabledStore) { ?> checked="checked" <?php } ?>>
-                                                        <label for="chk-store-<?php echo $store->getId(); ?>">
-                                                            <?php echo $website->getName().' > '.$group->getName().' > '.$store->getName(); ?>
-                                                        </label>
-                                                        <br/>
-                                                    <?php
-                                                }
-                                            }
-                                        }
-                                    ?>
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
             </div>
         </div>
     </div>

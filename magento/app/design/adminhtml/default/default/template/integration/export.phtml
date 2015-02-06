@@ -7,18 +7,18 @@
  */
 
 $_helper = Mage::helper('integration');
-$_config = Mage::helper('integration/config');
 $_collection = Mage::getResourceModel('integration/queue_collection');
 $_general_config = Mage::getConfig();
 $_core = Mage::helper('core');
 
+// get last run report
+$lastRun = $_helper->getLastReport();
+
 // format some dates
 $oldestRecordTime = $_collection->getQueueStartTime();
 $printableOldestRecordTime = $oldestRecordTime ? $_core->formatDate($oldestRecordTime, 'short', true) : $this->__("No records in queue");
-$lastStartTime = $_config->getLastStartTimeCronjob();
-$printableLastStartTime = $lastStartTime ? $_core->formatDate($lastStartTime, 'short', true) : $this->__("Never started");
-$lastEndTime = $_config->getLastEndTimeCronjob();
-$printableLastEndTime = $lastEndTime ? $_core->formatDate($lastEndTime, 'short', true) : $this->__("Never finished");
+$printableLastStartTime = $lastRun->getStartTime() ? $_core->formatDate($lastRun->getStartTime(), 'short', true) : $this->__("Never started");
+$printableLastEndTime = $lastRun->getEndTime() ? $_core->formatDate($lastRun->getEndTime(), 'short', true) : $this->__("Never finished");
 
 // is there a queue?
 $queueLength = $_collection->getSize();
@@ -138,7 +138,7 @@ function timeoutSync()
                         </td>
                         <td class="value">
                             <strong>
-                                <?php echo $_config->getLastCronjobProcessedTasks();?>
+                                <?php echo $lastRun->getProcessedTasks();?>
                             </strong>
                         </td>
                     </tr>
