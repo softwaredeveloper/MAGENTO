@@ -74,6 +74,15 @@ class Copernica_Integration_Model_Queue extends Mage_Core_Model_Abstract
      */
     public function save()
     {
+        /**
+         *  If we want to store a full sync event when there is one already
+         *  doing it's magic there is no point of storing it. Thus, we have to
+         *  check if there is such event already on the queue and leap out if 
+         *  we have such.
+         */
+        $queue = Mage::getResourceModel('integration/queue_collection')->addFieldToFilter('action', array ('eq' => 'start_sync'));
+        if (count($queue) > 0) return $this;
+
         // save the queuetime
         $this->setQueueTime(date("Y-m-d H:i:s"));
 
