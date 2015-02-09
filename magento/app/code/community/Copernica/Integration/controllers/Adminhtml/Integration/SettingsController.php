@@ -62,6 +62,17 @@ class Copernica_Integration_Adminhtml_integration_SettingsController extends Cop
     }
 
     /**
+     *  Put a full sync event on event queue. Such event will try to synchronize
+     *  all needed data to Copernica.
+     */
+    private function publishFullSyncEvent()
+    {
+        Mage::getModel('integration/queue')
+            ->setAction('start_sync')
+            ->save();
+    }
+
+    /**
      *  Handle urls that contain state variable.
      *  @return Copernica_Integration_Adminhtml_integration_SettingsController
      */
@@ -83,12 +94,32 @@ class Copernica_Integration_Adminhtml_integration_SettingsController extends Cop
             return $this->_redirect('*/*', array('response' => 'authorize-error'));
         }
 
+        /** 
+         *  Fetch current access token and account name. Depending on state of 
+         *  such we may want to perform additional actions, like start 
+         *  synchronization, so user will not have to bother with it.
+         */
+        $currentAccessToken = Mage::getStoreConfig('copernica_options/apiconnection/apiaccesstoken');
+        $currentAccount = Mage::getStoreConfig('copernica_options/apiconnection/apiaccount_id');
+
         // store access token inside magento config system
         Mage::getConfig()->saveConfig('copernica_options/apiconnection/apiaccesstoken', $accessToken);
 
         // retrieve account info and store account name inside hidden config
         $info = Mage::helper('integration/api')->account();
+
+        /**
+         *  If we had an empty access token till now that means no data was synced,
+         *  so it would be wise to start synchronization. 
+         *  When current account does not match with one that we just fetched 
+         *  we should start full sync as well, cause we assume that there is no 
+         *  data in that account ot it's really outdated.
+         */
+        if (empty($currentAccessToken) || $currentAccount != $info['id']) $this->publishFullSyncEvent();
+
+        // store new account related configs
         Mage::getConfig()->saveConfig('copernica_options/apiconnection/apiaccount', $info['name']);
+        Mage::getConfig()->saveConfig('copernica_options/apiconnection/apiaccount_id', $info['id']);
         
         // return this
         return $this->_redirect('*/*', array('response' => 'new-access-token'));
