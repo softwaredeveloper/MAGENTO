@@ -223,6 +223,9 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
      */
     public function storeQuote(Mage_Sales_Model_Quote $quote)
     {
+        // check if store is disabled for sync
+        if (!Mage::getStoreConfig('copernica_options/apisync/enabled', $quote->getStoreId())) return;
+
         // get the shipping and billing addresses
         $shippingAddress = $quote->getShippingAddress();
         $billingAddress  = $quote->getBillingAddress();
@@ -275,6 +278,9 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
          */
         $quote = Mage::getModel('sales/quote')->loadByIdWithoutStore($item->getQuoteId());
 
+        // check if store is disabled for sync
+        if (!Mage::getStoreConfig('copernica_options/apisync/enabled', $quote->getStoreId())) return;
+
         // item-quote relation is super broken
         $item->setQuote($quote);
 
@@ -312,6 +318,9 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
      */
     public function storeOrder(Mage_Sales_Model_Order $order)
     {
+        // check if store is disabled for sync
+        if (!Mage::getStoreConfig('copernica_options/apisync/enabled', $order->getStoreId())) return;
+
         // get the shipping and billing addresses
         $shippingAddress = $order->getShippingAddress();
         $billingAddress  = $order->getBillingAddress();
@@ -319,7 +328,7 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
         // determine the gender of the customer
         $gender = strtolower(Mage::getResourceSingleton('customer/customer')->getAttribute('gender')->getSource()->getOptionText($order->getCustomerGender()));
 
-        // if we do not get a gender something went wrong (or we don't know the gender)
+        // if we do not get a gender, something went wrong (or we don't know the gender)
         if (empty($gender)) $gender = null;
 
         // store the quote
@@ -355,6 +364,9 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
      */
     public function storeOrderItem(Mage_Sales_Model_Order_Item $item)
     {
+        // check if store is disabled for sync
+        if (!Mage::getStoreConfig('copernica_options/apisync/enabled', Mage::getModel('sales/order')->load($item->getOrderId())->getStoreId())) return;
+
         // store the order item
         $this->request->put("magento/orderitem/{$item->getId()}", array(
             'order'     =>  $item->getOrderId(),
@@ -390,6 +402,9 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
      */
     public function storeSubscriber(Mage_Newsletter_Model_Subscriber $subscriber)
     {
+        // check if store is disabled for sync
+        if (!Mage::getStoreConfig('copernica_options/apisync/enabled', $subscriber->getStoreId())) return;
+
         // store the subscriber
         $this->request->put("magento/subscriber/{$subscriber->getId()}", array(
             'customer'  =>  $subscriber->getCustomerId(),
@@ -418,6 +433,9 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
      */
     public function storeCustomer(Mage_Customer_Model_Customer $customer)
     {
+        // check if store is disabled for sync
+        if (!Mage::getStoreConfig('copernica_options/apisync/enabled', $customer->getStoreId())) return;
+
         // determine the gender of the customer
         $gender = strtolower(Mage::getResourceSingleton('customer/customer')->getAttribute('gender')->getSource()->getOptionText($customer->getGender()));
 
@@ -479,6 +497,9 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
             // get customer instance
             $customer = $address->getCustomer();
 
+            // check if store is disabled for sync
+            if (!Mage::getStoreConfig('copernica_options/apisync/enabled', $customer->getStoreId())) return;
+
             // set address type, customer, billing and shipping flag
             $metaData = array (
                 'type'              => 'customer',
@@ -492,6 +513,9 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
             // get order instance
             $order = $address->getOrder();
 
+            // check if store is disabled for sync
+            if (!Mage::getStoreConfig('copernica_options/apisync/enabled', $order->getStoreId())) return;
+
             // set address type, customer, billing and shipping flag
             $metaData = array( 
                 'type'              => 'order',
@@ -504,6 +528,9 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
         {
             // get quote instance
             $quote = $address->getQuote();
+
+            // check if store is disabled for sync
+            if (!Mage::getStoreConfig('copernica_options/apisync/enabled', $quote->getStoreId())) return;
 
             // set address type, customer, billing and shipping flag
             $metaData = array(
@@ -528,6 +555,25 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
             'fax'               =>  (string)$address->getFax(),
             'company'           =>  (string)$address->getCompany(),
         )));
+    }
+
+    /**
+     *  Remove magento address from copernica platform
+     *  @param  Mage_Customer_Model_Address_Abstract
+     */
+    public function removeAddress(Mage_Customer_Model_Address_Abstract $address)
+    {
+        /**
+         *  Similar to store action we have to detect what kind of address we are
+         *  dealing with and add additional type parameter.
+         */
+        if ($address instanceof Mage_Customer_Model_Address) $type = 'customer';
+        else if ($address instanceof Mage_Sales_Model_Order_Address) $type = 'order';
+        else if ($address instanceof Mage_Sales_Model_Quote_Address) $type = 'quote';
+        else return;
+
+        // remove address
+        $this->request->delete("magento/address", array( 'ID' => $address->getId(), 'type' => $type));
     }
 
     /**
