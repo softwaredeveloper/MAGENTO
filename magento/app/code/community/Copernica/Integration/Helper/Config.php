@@ -206,6 +206,6 @@ class Copernica_Integration_Helper_Config extends Mage_Core_Helper_Abstract
         if ($model->getId()) $model->delete(); 
 
         // unset model from cache
-        unset(self::$cache[$property]);
+        if (array_key_exists($property, self::$cache)) unset(self::$cache[$property]);
     }
 }
