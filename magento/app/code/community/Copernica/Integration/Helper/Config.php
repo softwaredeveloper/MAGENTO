@@ -36,7 +36,24 @@
  *      [action][property]()
  *
  *  where [action] is either "get", "set", "has", "uns" and property is property
- *  name written in camel case convention (must start with uppercase). 
+ *  name written in camel case convention (must start with uppercase).
+ *
+ *  It is also possible to make such actions on property using public ::get(),
+ *  ::set(), ::has(), ::uns() methods. Thus with such, use property name has to
+ *  be in undescrore convention.
+ *
+ *  Usage:
+ *
+ *      // get the instance
+ *      $config = Mage::getHelper('integration/config');
+ *
+ *      // set some property value
+ *      $config->set('some_property', 'value');
+ *      // or
+ *      $config->setSomeProperty('value');
+ *
+ *      // get value of 'some_property'
+ *      $value = $config->getSomeProperty();
  */
 class Copernica_Integration_Helper_Config extends Mage_Core_Helper_Abstract
 {
@@ -119,7 +136,7 @@ class Copernica_Integration_Helper_Config extends Mage_Core_Helper_Abstract
              *  allow chainig (since no output is required).
              */
             case 'uns':
-                $this->unsset($property);
+                $this->unset($property);
 
                 // allow chaining
                 return $this;
@@ -138,7 +155,7 @@ class Copernica_Integration_Helper_Config extends Mage_Core_Helper_Abstract
      *  @param  sting
      *  @return mixed
      */
-    private function get($property)
+    public function get($property)
     {
         // if we have model entry inside cache we can just return value from cached instance
         if (array_key_exists($property, self::$cache)) return $self::$cache->getValue();
@@ -162,7 +179,7 @@ class Copernica_Integration_Helper_Config extends Mage_Core_Helper_Abstract
      *  @param  string  The property name
      *  @param  mixed   The property value
      */
-    private function set($property, $value = null)
+    public function set($property, $value = null)
     {
         /**
          *  Load model for given property name. We prefere to load model from 
@@ -179,6 +196,9 @@ class Copernica_Integration_Helper_Config extends Mage_Core_Helper_Abstract
 
         // create/updace cache entry
         self::$cache[$property] = $model;
+
+        // allow chaining
+        return $this;
     }
 
     /**
@@ -187,7 +207,7 @@ class Copernica_Integration_Helper_Config extends Mage_Core_Helper_Abstract
      *  @param  string  The property name
      *  @return boolean Is property set
      */
-    private function has($property)
+    public function has($property)
     {
         /**
          *  If we have property inside cache we are sure that we have such 
@@ -210,7 +230,7 @@ class Copernica_Integration_Helper_Config extends Mage_Core_Helper_Abstract
      *  
      *  @param  string  The property name
      */
-    private function uns($property)
+    public function unset($property)
     {
         /**
          *  Load model for given property name. We prefere to load model from 
@@ -225,5 +245,8 @@ class Copernica_Integration_Helper_Config extends Mage_Core_Helper_Abstract
 
         // unset model from cache
         if (array_key_exists($property, self::$cache)) unset(self::$cache[$property]);
+
+        // allow chaining
+        return $this;
     }
 }
