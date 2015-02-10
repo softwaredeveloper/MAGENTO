@@ -39,7 +39,7 @@
  *  name written in camel case convention (must start with uppercase).
  *
  *  It is also possible to make such actions on property using public ::get(),
- *  ::set(), ::has(), ::uns() methods. Thus with such, use property name has to
+ *  ::set(), ::has(), ::remove() methods. Thus with such, use property name has to
  *  be in undescrore convention.
  *
  *  Usage:
@@ -136,7 +136,7 @@ class Copernica_Integration_Helper_Config extends Mage_Core_Helper_Abstract
              *  allow chainig (since no output is required).
              */
             case 'uns':
-                $this->unset($property);
+                $this->remove($property);
 
                 // allow chaining
                 return $this;
@@ -161,7 +161,7 @@ class Copernica_Integration_Helper_Config extends Mage_Core_Helper_Abstract
         if (array_key_exists($property, self::$cache)) return $self::$cache->getValue();
 
         // fetch config model by property key
-        $model = Mage::getModel('integration/config')->loadByKey($property);
+        $model = Mage::getModel('integration/config')->load($property, 'key_name');
 
         // if we don't have a proper model we will just return null as it's value
         if (!$model->getID()) return null;
@@ -188,7 +188,7 @@ class Copernica_Integration_Helper_Config extends Mage_Core_Helper_Abstract
          *  property name we will just try to ask for model with given property 
          *  name.
          */
-        $model = array_key_exists($property, self::$cache) ? self::$cache[$property] : Mage::getModel('integration/config')->loadByKey($property);
+        $model = array_key_exists($property, self::$cache) ? self::$cache[$property] : Mage::getModel('integration/config')->load($property, 'key_name');
 
         // update model value and save it
         $model->setValue($value);
@@ -217,7 +217,7 @@ class Copernica_Integration_Helper_Config extends Mage_Core_Helper_Abstract
         if (array_key_exists($property, self::$cache)) return true;
 
         // we have to ask magento for a model by given name
-        $model = Mage::getModel('integration/config')->loadByKey($property);
+        $model = Mage::getModel('integration/config')->load($property, 'key_name');
 
         // if model has ID we can tell tha it is in database so it's set
         if ($model->getId()) return true;
@@ -232,7 +232,7 @@ class Copernica_Integration_Helper_Config extends Mage_Core_Helper_Abstract
      *  @param  string  The property name
      *  @return Copernica_Integration_Helper_Config
      */
-    public function unset($property)
+    public function remove($property)
     {
         /**
          *  Load model for given property name. We prefere to load model from 
@@ -240,7 +240,7 @@ class Copernica_Integration_Helper_Config extends Mage_Core_Helper_Abstract
          *  property name we will just try to ask for model with given property 
          *  name.
          */
-        $model = array_key_exists($property, self::$cache) ? self::$cache[$property] : Mage::getModel('integration/config')->loadByKey($property);
+        $model = array_key_exists($property, self::$cache) ? self::$cache[$property] : Mage::getModel('integration/config')->load($property, 'key_name');
 
         // if model has Id then it is stored inside database, so we should remove it
         if ($model->getId()) $model->delete(); 

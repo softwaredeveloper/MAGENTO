@@ -45,19 +45,4 @@ class Copernica_Integration_Model_Config extends Mage_Core_Model_Abstract
     {
         $this->_init('integration/config');
     }
-
-    /**
-     *  Load configuration row by it's key.
-     *  @param  string
-     *  @return Copernica_Integration_Model_Config
-     */
-    public function loadByKey($key)
-    {
-        $this->_beforeLoad($key, 'key_name');
-        $this->_getResource()->load($this, $key, 'key_name');
-        $this->_afterLoad();
-        $this->setOrigData();
-        $this->_hasDataChanges = false;
-        return $this;
-    }
 }
