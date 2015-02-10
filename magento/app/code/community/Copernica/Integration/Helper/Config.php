@@ -27,8 +27,6 @@
 
 /**
  * Copernica config helper
- *
- * @todo check if this class can be better...
  */
 class Copernica_Integration_Helper_Config extends Mage_Core_Helper_Abstract
 {
@@ -211,100 +209,5 @@ class Copernica_Integration_Helper_Config extends Mage_Core_Helper_Abstract
 
         // Store the value in the custom config
         $this->_setCustomConfig($name, $value);
-    }
-
-    /**
-     *  Check if store is enabled.
-     *  @param  int
-     *  @return bool
-     */
-    public function isEnabledStore($storeId)
-    {
-        // get enabled stores
-        $stores = @unserialize($this->_getConfig('enabled_stores'));
-
-        // if we don't have an array we will return true
-        if (!is_array($stores)) return true;
-
-        // check if store Id is in enabled array
-        return in_array($storeId, $stores);
-    }
-
-    /**
-     *  Set stores. Pass null to disable store filtering.
-     *  @param  array|null
-     *  @return Copernica_Integration_Helper_Config
-     */
-    public function setEnabledStores(array $collectionOfStoresId = null)
-    {
-        // set stores
-        $this->_setConfig('enabled_stores', serialize($collectionOfStoresId));
-        return $this;
-    }
-
-    /**
-     *  Get list of enabled stores
-     *  @return array|null
-     */
-    public function getEnabledStores()
-    {
-        return unserialize($this->_getConfig('enabled_stores'));
-    }
-
-    /**
-     *  Get the last start time of the cronjob.
-     *  @return datetime
-     */
-    public function getLastStartTimeCronjob()
-    {
-        return $this->_getConfig('cronjob_starttime');
-    }
-
-    /**
-     *  Set the last start time of the cronjob.
-     *  @param  datetime
-     */
-    public function setLastStartTimeCronjob($value)
-    {
-        $this->_setConfig('cronjob_starttime', $value);
-        return $this;
-    }
-
-    /**
-     *  Get the last end time of the cronjob.
-     *  @return datetime
-     */
-    public function getLastEndTimeCronjob()
-    {
-        return $this->_getConfig('cronjob_endtime');
-    }
-
-    /**
-     *  Set the last end time of the cronjob.
-     *  @param  datetime
-     */
-    public function setLastEndTimeCronjob($value)
-    {
-        $this->_setConfig('cronjob_endtime', $value, true);
-        return $this;
-    }
-
-    /**
-     *  Get the number of processed records of the last cronjob run.
-     *  @return integer
-     */
-    public function getLastCronjobProcessedTasks()
-    {
-        return (int)$this->_getConfig('cronjob_processedtasks');
-    }
-
-    /**
-     *  Set the last end time of the cronjob.
-     *  @param  integer
-     */
-    public function setLastCronjobProcessedTasks($value)
-    {
-        $this->_setConfig('cronjob_processedtasks', $value);
-        return $this;
     }
 }
