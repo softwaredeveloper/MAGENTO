@@ -178,6 +178,7 @@ class Copernica_Integration_Helper_Config extends Mage_Core_Helper_Abstract
      *
      *  @param  string  The property name
      *  @param  mixed   The property value
+     *  @return Copernica_Integration_Helper_Config
      */
     public function set($property, $value = null)
     {
@@ -229,6 +230,7 @@ class Copernica_Integration_Helper_Config extends Mage_Core_Helper_Abstract
      *  Removing property by name.
      *  
      *  @param  string  The property name
+     *  @return Copernica_Integration_Helper_Config
      */
     public function unset($property)
     {
