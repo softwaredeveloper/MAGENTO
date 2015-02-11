@@ -526,7 +526,12 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
         } 
         else if ($address instanceof Mage_Sales_Model_Quote_Address)
         {
-            // get quote instance
+            /**
+             *  It's really broken. Quote address will not know its own quote,
+             *  unless we assign a quote that we fetched from Mage instance 
+             *  with use of ID that we got from address instance.
+             */
+            $address->setQuote(Mage::getModel('sales/quote')->load($address->getQuoteId()));
             $quote = $address->getQuote();
 
             // check if store is disabled for sync
