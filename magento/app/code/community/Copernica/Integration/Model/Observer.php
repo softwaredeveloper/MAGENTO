@@ -309,14 +309,14 @@ class Copernica_Integration_Model_Observer
      *  his or her addresses
      *
      *  @listen 'customer_address_save_after'
+     *  @listen 'sales_order_address_save_after'
+     *  @listen 'sales_quote_address_save_after'
      *  @param  Varien_Event_Observer   observer object
      */
     public function addressModified(Varien_Event_Observer $observer)
     {
         // if the plug-in is not enabled, skip this
         if (!$this->enabled() || !$this->isValidStore()) return;
-
-        $address = $observer->getEvent()->getDataObject();
 
         // do we have a valid address?
         if ($address = $observer->getEvent()->getDataObject())
@@ -331,17 +331,13 @@ class Copernica_Integration_Model_Observer
      *
      *  @listen 'customer_address_delete_before'
      *  @listen 'sales_order_address_delete_before'
-     *  @listen 'sales_quote_address_save_after'
+     *  @listen 'sales_quote_address_delete_before'
      *  @param  Varien_Event_Observer   observer object
      */
     public function addressRemoved(Varien_Event_Observer $observer)
     {
         // if the plug-in is not enabled, skip this
         if (!$this->enabled() || !$this->isValidStore()) return;
-
-        $address = $observer->getEvent()->getCustomerAddress();
-
-        Mage::log('addressRemoved with '.gettype($address).' '.get_class($address), null, 'copernica.log');
 
         // do we have a valid address?
         if ($address = $observer->getEvent()->getDataObject())
