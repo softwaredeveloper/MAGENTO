@@ -123,6 +123,14 @@
                     </integration_observer>
                 </observers>
             </customer_address_save_after>
+            <customer_address_delete_before>
+                <observers>
+                    <integration_observer>
+                        <class>integration/observer</class>
+                        <method>addressRemoved</method>
+                    </integration_observer>
+                </observers>
+            </customer_address_delete_before>
             <sales_order_address_save_after>
                 <observers>
                     <integration_observer>
@@ -131,6 +139,14 @@
                     </integration_observer>
                 </observers>
             </sales_order_address_save_after>
+            <sales_order_address_delete_before>
+                <observers>
+                    <integration_observer>
+                        <class>integration/observer</class>
+                        <method>addressRemoved</method>
+                    </integration_observer>
+                </observers>
+            </sales_order_address_delete_before>
             <sales_quote_address_save_after>
                 <observers>
                     <integration_observer>
@@ -139,6 +155,14 @@
                     </integration_observer>
                 </observers>
             </sales_quote_address_save_after>
+            <sales_quote_address_delete_before>
+                <observers>
+                    <integration_observer>
+                        <class>integration/observer</class>
+                        <method>addressRemoved</method>
+                    </integration_observer>
+                </observers>
+            </sales_quote_address_delete_before>
             <catalog_product_save_after>
                 <observers>
                     <integration_observer>
