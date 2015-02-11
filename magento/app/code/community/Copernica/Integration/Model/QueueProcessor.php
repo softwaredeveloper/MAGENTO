@@ -169,21 +169,27 @@ class Copernica_Integration_Model_QueueProcessor
             // what type of object are we synchronizing and what happened to it?
             switch ("{$resourceName}/{$action}")
             {
-                case 'catalog/product/store':           $this->api->storeProduct($object);      break;
-                case 'sales/quote/store':               $this->api->storeQuote($object);        break;
-                case 'sales/quote_item/remove':         $this->api->removeQuoteItem($object);   break;
-                case 'sales/quote_item/store':          $this->api->storeQuoteItem($object);    break;
-                case 'sales/order/store':               $this->api->storeOrder($object);        break;
-                case 'newsletter/subscriber/store':     $this->api->storeSubscriber($object);   break;
-                case 'newsletter/subscriber/remove':    $this->api->removeSubscriber($object);  break;
-                case 'customer/customer/remove':        $this->api->removeCustomer($object);    break;
-                case 'customer/customer/store':         $this->api->storeCustomer($object);     break;
-                case 'customer/address/store':          $this->api->storeAddress($object);      break;
-                case 'sales/order_address/store':       $this->api->storeAddress($object);      break;
-                case 'sales/quote_address/stored':      $this->api->storeAddress($object);      break;
-                case 'core/store/store':                $this->api->storeStore($object);        break;
-                case 'catalog/category/store':          $this->api->storeCategory($object);     break;
-                case 'catalog/category/remove':         $this->api->removeCategory($object);    break;
+                // creations or updates
+                case 'catalog/product/store':           $this->api->storeProduct($object);          break;
+                case 'sales/quote/store':               $this->api->storeQuote($object);            break;
+                case 'sales/quote_item/store':          $this->api->storeQuoteItem($object);        break;
+                case 'sales/order/store':               $this->api->storeOrder($object);            break;
+                case 'newsletter/subscriber/store':     $this->api->storeSubscriber($object);       break;
+                case 'customer/customer/store':         $this->api->storeCustomer($object);         break;
+                case 'customer/address/store':          $this->api->storeAddress($object);          break;
+                case 'sales/quote_address/store':       $this->api->storeAddress($object);          break;
+                case 'sales/order_address/store':       $this->api->storeAddress($object);          break;
+                case 'core/store/store':                $this->api->storeStore($object);            break;
+                case 'catalog/category/store':          $this->api->storeCategory($object);         break;
+
+                // removals
+                case 'newsletter/subscriber/remove':    $this->api->removeSubscriber($object);      break;
+                case 'sales/quote_item/remove':         $this->api->removeQuoteItem($object);       break;
+                case 'catalog/category/remove':         $this->api->removeCategory($object);        break;
+                case 'customer/customer/remove':        $this->api->removeCustomer($object);        break;
+                case 'customer/address/remove':         $this->api->removeAddress($object);         break;
+                case 'sales/order_address/remove':      $this->api->removeAddress($object);         break;
+                case 'sales/quote_address/remove':      $this->api->removeAddress($object);         break;
 
                 // Start sync is a more complicated task to process.
                 case '/start_sync':
