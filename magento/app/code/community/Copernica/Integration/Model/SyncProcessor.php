@@ -163,7 +163,7 @@ class Copernica_Integration_Model_SyncProcessor
 
                 // we are really done here
                 return;
-            }            
+            }
         }
 
         // we are done so we can store current state
