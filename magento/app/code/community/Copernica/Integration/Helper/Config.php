@@ -158,7 +158,7 @@ class Copernica_Integration_Helper_Config extends Mage_Core_Helper_Abstract
     public function get($property)
     {
         // if we have model entry inside cache we can just return value from cached instance
-        if (array_key_exists($property, self::$cache)) return $self::$cache->getValue();
+        if (array_key_exists($property, self::$cache)) return self::$cache->getValue();
 
         // fetch config model by property key
         $model = Mage::getModel('integration/config')->load($property, 'key_name');
