@@ -27,22 +27,14 @@
             </integration_mysql4>
         </models>
         <events>
-            <checkout_controller_onepage_save_shipping_method>
+            <checkout_onepage_controller_success_action>
                 <observers>
                     <integration_observer>
                         <class>integration/observer</class>
                         <method>checkoutSaveStep</method>
                     </integration_observer>
                 </observers>
-            </checkout_controller_onepage_save_shipping_method>
-            <checkout_controller_multishipping_shipping_post>
-                <observers>
-                    <integration_observer>
-                        <class>integration/observer</class>
-                        <method>checkoutSaveStep</method>
-                    </integration_observer>
-                </observers>
-            </checkout_controller_multishipping_shipping_post>
+            </checkout_onepage_controller_success_action>
             <core_store_save_after>
                 <observers>
                     <integration_observer>

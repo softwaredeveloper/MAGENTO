@@ -79,8 +79,7 @@ class Copernica_Integration_Model_Observer
      *  This method is fired during checkout process, after the
      *  customer has entered billing address and saved the shipping method
      *
-     *  @listen checkout_controller_onepage_save_shipping_method
-     *  @listen checkout_controller_multishipping_shipping_post
+     *  @listen checkout_onepage_controller_success_action
      *  @param  Varien_Event_Observer    observer object
      */
     public function checkoutSaveStep(Varien_Event_Observer $observer)
@@ -91,9 +90,6 @@ class Copernica_Integration_Model_Observer
         // Do we have a valid item?
         if ($quote = $observer->getEvent()->getQuote())
         {
-            // we only synchronize quotes with a valid customer
-            if (!$quote->getCustomerId()) return;
-
             // add the quote to the synchronize queue
             $this->synchronize($quote);
         }
@@ -120,9 +116,6 @@ class Copernica_Integration_Model_Observer
              *  this quote item now to avoid unnecessary communication
              */
             if ($item->getParentItemId()) return;
-
-            // if there is no valid customer we do not care about the quote
-            if (!$item->getQuote()->getCustomerId()) return;
 
             // add the item to the synchronize queue
             $this->synchronize($item, 'remove');
@@ -176,9 +169,6 @@ class Copernica_Integration_Model_Observer
             // if an order has no state, it will get one in the next call (usually a few seconds later)
             if (!$order->getState()) return;
 
-            // if there is no valid customer we do not care about the order
-            if (!$order->getCustomerId()) return;
-
             // add the order to the synchronize queue
             $this->synchronize($order);
         }
@@ -198,9 +188,6 @@ class Copernica_Integration_Model_Observer
         // do we have a valid item?
         if ($item = $observer->getEvent()->getItem())
         {
-            // do we have a valid customer with the order?
-            if (!$item->getOrder()->getCustomerId()) return;
-
             // add the item to the synchronize queue
             $this->synchronize($item);
         }
@@ -220,9 +207,6 @@ class Copernica_Integration_Model_Observer
         // Do we have a valid item?
         if ($subscriber = $observer->getEvent()->getSubscriber())
         {
-            // if there is no valid customer we do not care about the subscription
-            if (!$subscriber->getCustomerId()) return;
-
             // add the subscription to the synchronize queue
             $this->synchronize($subscriber, 'remove');
         }
@@ -251,10 +235,7 @@ class Copernica_Integration_Model_Observer
              *  prevent at least some unnecessary synchronisations this way.
              */
             if (!$subscriber->hasDataChanges()) return;
-
-            // if there is no valid customer we do not care about the subscription
-            if (!$subscriber->getCustomerId()) return;
-
+            
             // add the subscription to the synchronization queue
             $this->synchronize($subscriber);
         }
