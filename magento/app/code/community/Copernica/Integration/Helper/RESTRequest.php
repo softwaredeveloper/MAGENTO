@@ -260,11 +260,12 @@ class Copernica_Integration_Helper_RESTRequest extends Mage_Core_Helper_Abstract
     /**
      *  Make a DELETE request
      *  @param  string  Request string
+     *  @param  array   (Optional) Additional parameters
      */
-    public function delete($request)
+    public function delete($request, array $data = array())
     {
         // get curl instance
-        $curl = $this->curl($request);
+        $curl = $this->curl($request, $data);
 
         // we want to set custom request
         curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "DELETE");

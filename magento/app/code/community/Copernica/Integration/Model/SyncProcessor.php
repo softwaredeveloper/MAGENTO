@@ -163,7 +163,7 @@ class Copernica_Integration_Model_SyncProcessor
 
                 // we are really done here
                 return;
-            }            
+            }
         }
 
         // we are done so we can store current state
@@ -283,7 +283,7 @@ class Copernica_Integration_Model_SyncProcessor
         $nextModelIdx = array_search($this->currentModel, $this->models) + 1;
 
         // set next model name
-        $this->currentModel = $nextModelIdx < count($this->models) ? $this->models[$nextModelIdx] : null;
+        $this->currentModel = ($nextModelIdx < count($this->models)) ? $this->models[$nextModelIdx] : null;
 
         // since we want to make a switch we should reset last model Id
         $this->lastModelId = 0;

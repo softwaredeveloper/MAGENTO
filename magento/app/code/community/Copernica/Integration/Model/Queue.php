@@ -68,12 +68,52 @@ class Copernica_Integration_Model_Queue extends Mage_Core_Model_Abstract
     }
 
     /**
+     *  Clear all queued items that are considered dupluicates to this one.
+     */
+    private function clearDuplicates()
+    {
+        /**
+         *  As duplicated items we recognize ones that have same action, 
+         *  entity_model, entity_id and have no result set.
+         */
+        $queue = Mage::getResourceModel('integration/queue_collection')
+            ->addFieldToFilter('action', array('eq' => parent::getData('action')))
+            ->addFieldToFilter('entity_model', array('eq' => parent::getData('entity_model')))
+            ->addFieldToFilter('entity_id', array('eq' => parent::getData('entity_id')))
+            ->addFieldToFilter('result', array('null' => true));
+
+        // remove duplicated element 
+        foreach ($queue as $item) $item->delete();
+    }
+
+    /**
      *  Function to save the correct queue time
      *
      *  @return Copernica_Integration_Model_Queue
      */
     public function save()
     {
+        /**
+         *  If we want to store a full sync event when there is one already
+         *  doing it's magic there is no point of storing it. Thus, we have to
+         *  check if there is such event already on the queue and leap out if 
+         *  we have such.
+         */
+        $queue = Mage::getResourceModel('integration/queue_collection')->addFieldToFilter('action', array ('eq' => 'start_sync'));
+        if (count($queue) > 0) return $this;
+
+        /**
+         *  It's just purely stupid how many events Magento can produce when 
+         *  making simple actions (like placing order or requesting shipping cost).
+         *  Most of such events are duplicated and they will not make reasonable
+         *  effect on final data form. Thus, we can remove duplicated events from
+         *  sync queue. This way we will be able to save some time and not waste
+         *  a lot of CPU and bandwidth for meaningless communication.
+         *  We don't want to remove 'start_sync' events cause they are kinda 
+         *  special and they have additional data attached to them.
+         */
+        $this->clearDuplicates();
+
         // save the queuetime
         $this->setQueueTime(date("Y-m-d H:i:s"));
 

@@ -76,15 +76,11 @@ class Copernica_Integration_Model_Observer
     }
 
     /**
-     *  Method for the following events:
-     *
-     *  'checkout_controller_onepage_save_shipping_method'
-     *  'checkout_controller_multishipping_shipping_post'
-     *
      *  This method is fired during checkout process, after the
      *  customer has entered billing address and saved the shipping method
      *
-     *  @param Varien_Event_Observer    observer object
+     *  @listen checkout_onepage_controller_success_action
+     *  @param  Varien_Event_Observer    observer object
      */
     public function checkoutSaveStep(Varien_Event_Observer $observer)
     {
@@ -94,23 +90,17 @@ class Copernica_Integration_Model_Observer
         // Do we have a valid item?
         if ($quote = $observer->getEvent()->getQuote())
         {
-            // we only synchronize quotes with a valid customer
-            if (!$quote->getCustomerId()) return;
-
             // add the quote to the synchronize queue
             $this->synchronize($quote);
         }
     }
 
     /**
-     *  Method for the following events:
-     *
-     *  'sales_quote_item_delete_before'
-     *
      *  This method is fired when an item is removed
      *  from a quote.
      *
-     *  @param Varien_Event_Observer    observer object
+     *  @listen sales_quote_item_delete_before
+     *  @param  Varien_Event_Observer    observer object
      */
     public function quoteItemRemoved(Varien_Event_Observer $observer)
     {
@@ -127,23 +117,17 @@ class Copernica_Integration_Model_Observer
              */
             if ($item->getParentItemId()) return;
 
-            // if there is no valid customer we do not care about the quote
-            if (!$item->getQuote()->getCustomerId()) return;
-
             // add the item to the synchronize queue
             $this->synchronize($item, 'remove');
         }
     }
 
     /**
-     *  Method for the following events:
-     *
-     *  'sales_quote_item_save_after'
-     *
      *  This method is fired when an item is added to a quote
      *  or when a quote item is modified.
      *
-     *  @param Varien_Event_Observer    observer object
+     *  @listen sales_quote_item_save_after
+     *  @param  Varien_Event_Observer    observer object
      */
     public function quoteItemModified(Varien_Event_Observer $observer)
     {
@@ -169,13 +153,10 @@ class Copernica_Integration_Model_Observer
     }
 
     /**
-     *  Method for the following events:
-     *
-     *  'sales_order_save_after'
-     *
      *  This method is fired when an order is added or modified
      *
-     *  @param Varien_Event_Observer    observer object
+     *  @listen sales_order_save_after
+     *  @param  Varien_Event_Observer    observer object
      */
     public function orderModified(Varien_Event_Observer $observer)
     {
@@ -188,21 +169,15 @@ class Copernica_Integration_Model_Observer
             // if an order has no state, it will get one in the next call (usually a few seconds later)
             if (!$order->getState()) return;
 
-            // if there is no valid customer we do not care about the order
-            if (!$order->getCustomerId()) return;
-
             // add the order to the synchronize queue
             $this->synchronize($order);
         }
     }
 
     /**
-     *  Method for the following events:
-     *
-     *  'sales_order_item_save_after':
-     *
      *  This method is fired when an order item is added or modified
      *
+     *  @listen 'sales_order_item_save_after'
      *  @param  Varien_Event_Observer   observer object
      */
     public function orderItemModified(Varien_Event_Observer $observer)
@@ -213,22 +188,16 @@ class Copernica_Integration_Model_Observer
         // do we have a valid item?
         if ($item = $observer->getEvent()->getItem())
         {
-            // do we have a valid customer with the order?
-            if (!$item->getOrder()->getCustomerId()) return;
-
             // add the item to the synchronize queue
             $this->synchronize($item);
         }
     }
 
     /**
-     *  Method for the following events:
-     *
-     *  'newsletter_subscriber_delete_before'
-     *
      *  This method is fired when a newsletter subscription is removed
      *
-     *  @param Varien_Event_Observer    observer object
+     *  @listen 'newsletter_subscriber_delete_before'
+     *  @param  Varien_Event_Observer    observer object
      */
     public function newsletterSubscriptionRemoved(Varien_Event_Observer $observer)
     {
@@ -238,22 +207,16 @@ class Copernica_Integration_Model_Observer
         // Do we have a valid item?
         if ($subscriber = $observer->getEvent()->getSubscriber())
         {
-            // if there is no valid customer we do not care about the subscription
-            if (!$subscriber->getCustomerId()) return;
-
             // add the subscription to the synchronize queue
             $this->synchronize($subscriber, 'remove');
         }
     }
 
     /**
-     *  Method for the following events:
-     *
-     *  'newsletter_subscriber_save_after'.
-     *
      *  This method is fired when a newsletter subscription is added or modified.
      *
-     *  @param Varien_Event_Observer    observer object
+     *  @listen 'newsletter_subscriber_save_after'
+     *  @param  Varien_Event_Observer    observer object
      */
     public function newsletterSubscriptionModified(Varien_Event_Observer $observer)
     {
@@ -272,23 +235,17 @@ class Copernica_Integration_Model_Observer
              *  prevent at least some unnecessary synchronisations this way.
              */
             if (!$subscriber->hasDataChanges()) return;
-
-            // if there is no valid customer we do not care about the subscription
-            if (!$subscriber->getCustomerId()) return;
-
+            
             // add the subscription to the synchronization queue
             $this->synchronize($subscriber);
         }
     }
 
     /**
-     *  Method for the following events:
-     *
-     *  'customer_delete_before'
-     *
      *  This method is triggered when a customer gets removed.
      *
-     *  @param Varien_Event_Observer    observer object
+     *  @listen 'customer_delete_before'
+     *  @param  Varien_Event_Observer    observer object
      */
     public function customerRemoved(Varien_Event_Observer $observer)
     {
@@ -302,18 +259,15 @@ class Copernica_Integration_Model_Observer
             if (!$customer->getId()) return;
 
             // add this customer to the synchronize queue
-            $this->synchronize($customer);
+            $this->synchronize($customer, 'remove');
         }
     }
 
     /**
-     *  Method for the following events:
-     *
-     *  'customer_save_after'.
-     *
      *  This method is triggered when a customer gets added or modified.
      *
-     *  @param Varien_Event_Observer    observer object
+     *  @listen 'customer_save_after'
+     *  @param  Varien_Event_Observer    observer object
      */
     public function customerModified(Varien_Event_Observer $observer)
     {
@@ -332,13 +286,12 @@ class Copernica_Integration_Model_Observer
     }
 
     /**
-     *  Method for the following events:
-     *
-     *  'customer_address_save_after'.
-     *
      *  This method is triggered when a customer updates one of
      *  his or her addresses
      *
+     *  @listen 'customer_address_save_after'
+     *  @listen 'sales_order_address_save_after'
+     *  @listen 'sales_quote_address_save_after'
      *  @param  Varien_Event_Observer   observer object
      */
     public function addressModified(Varien_Event_Observer $observer)
@@ -347,23 +300,38 @@ class Copernica_Integration_Model_Observer
         if (!$this->enabled() || !$this->isValidStore()) return;
 
         // do we have a valid address?
-        if ($address = $observer->getEvent()->getCustomerAddress())
+        if ($address = $observer->getEvent()->getDataObject())
         {
-            // we only care about valid addresses belonging to valid customer
-            if (!$address->getId() || !$address->getCustomerId()) return;
-
             // add this customer to the synchronize queue
             $this->synchronize($address);
         }
     }
 
     /**
-     *  Method for the following events:
+     *  This method is triggered when one of customers address is removed.
      *
-     *  'catalog_product_save_after'
-     *
+     *  @listen 'customer_address_delete_before'
+     *  @listen 'sales_order_address_delete_before'
+     *  @listen 'sales_quote_address_delete_before'
+     *  @param  Varien_Event_Observer   observer object
+     */
+    public function addressRemoved(Varien_Event_Observer $observer)
+    {
+        // if the plug-in is not enabled, skip this
+        if (!$this->enabled() || !$this->isValidStore()) return;
+
+        // do we have a valid address?
+        if ($address = $observer->getEvent()->getDataObject())
+        {
+            // remove this address
+            $this->synchronize($address, 'remove');
+        }
+    }
+
+    /**
      *  This method is triggered when a product is created or updated
      *
+     *  @listen 'catalog_product_save_after'
      *  @param  Varien_Event_Observer   observer object
      */
     public function productModified(Varien_Event_Observer $observer)
@@ -383,12 +351,9 @@ class Copernica_Integration_Model_Observer
     }
 
     /**
-     *  Method for the following events:
-     *
-     *  'core_store_save_after'
-     *
      *  This method is triggered when a store is created or updated
      *  
+     *  @listen 'core_store_save_after'
      *  @param  Varien_Event_Observer   observer object
      */
     public function storeModified(Varien_Event_Observer $observer)
@@ -409,13 +374,10 @@ class Copernica_Integration_Model_Observer
     }
 
     /**
-     *  Method for the following events:
-     *
-     *  'catalog_controller_product_view'
-     *
      *  This method is triggered when a customer views a product
      *
-     *  @param Varien_Event_Observer    observer object
+     *  @listen 'catalog_controller_product_view'
+     *  @param  Varien_Event_Observer    observer object
      */
     public function productViewed(Varien_Event_Observer $observer)
     {
@@ -437,13 +399,10 @@ class Copernica_Integration_Model_Observer
     }
 
     /**
-     *  Method for the followitn events:
-     *
-     *  'catalog_category_save_commit_after'
-     *  'catalog_category_tree_move_after'
-     *
      *  This is triggered when a category is stored.
      *
+     *  @listen 'catalog_category_save_commit_after'
+     *  @listen 'catalog_category_tree_move_after'
      *  @param  Varien_Event_Observer
      */ 
     public function categoryModified(Varien_Event_Observer $observer)
@@ -468,12 +427,9 @@ class Copernica_Integration_Model_Observer
     }
 
     /**
-     *  Method for the followitn events:
-     *
-     *  'catalog_category_save_commit_after'
-     *
      *  This is triggered when a category is removed.
      *
+     *  @listen 'catalog_category_delete_before'
      *  @param  Varien_Event_Observer
      */ 
     public function categoryRemoved(Varien_Event_Observer $observer)

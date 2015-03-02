@@ -6,29 +6,10 @@
  */
 ?>
 
-<script type="text/javascript">
-
-// on page load
-Event.observe(window, 'load', function() {
-
-    // when button is clicked we want to save information on server
-    $('synchronize_save').on('click', function(event) {
-        $('synchronize_form').submit();
-    });
-    
-}, false);
-
-</script>
-
 <div class="content-header">
     <h3 class="icon-head head-system-account">
         <?php echo $this->__("Copernica Marketing Software : Settings"); ?>
     </h3>
-    <p class="form-buttons">
-        <button type="button" name="synchronize_save" id="synchronize_save">
-            <?php echo $this->__("Save connection settings"); ?>
-        </button>
-    </p>
 </div>
 
 <form action="<?php echo $this->getPostUrl(); ?>" method="post" name="synchronize_form" id="synchronize_form">

@@ -164,26 +164,44 @@ class Copernica_Integration_Model_QueueProcessor
         $action = $item->getAction();
         $resourceName = !is_null($object) ? $object->getResourceName() : '';
 
+        // increment processed tasks counter
+        $this->processedTasks++;
+
+        /**
+         *  Since we are processing item right now (well about to make the 
+         *  processing happen), we want to remote the item from the queue. We 
+         *  know all the data that we need so there is no point of keeping that 
+         *  item around. Also it can influence if nedded items will be added to 
+         *  the queue. ('start_sync' action)
+         */
+        $item->delete();
+
         try
         {
             // what type of object are we synchronizing and what happened to it?
             switch ("{$resourceName}/{$action}")
             {
-                case 'catalog/product/store':           $this->api->storeProduct($object);      break;
-                case 'sales/quote/store':               $this->api->storeQuote($object);        break;
-                case 'sales/quote_item/remove':         $this->api->removeQuoteItem($object);   break;
-                case 'sales/quote_item/store':          $this->api->storeQuoteItem($object);    break;
-                case 'sales/order/store':               $this->api->storeOrder($object);        break;
-                case 'newsletter/subscriber/store':     $this->api->storeSubscriber($object);   break;
-                case 'newsletter/subscriber/remove':    $this->api->removeSubscriber($object);  break;
-                case 'customer/customer/remove':        $this->api->removeCustomer($object);    break;
-                case 'customer/customer/store':         $this->api->storeCustomer($object);     break;
-                case 'customer/address/store':          $this->api->storeAddress($object);      break;
-                case 'sales/order_address/store':       $this->api->storeAddress($object);      break;
-                case 'sales/quote_address/stored':      $this->api->storeAddress($object);      break;
-                case 'core/store/store':                $this->api->storeStore($object);        break;
-                case 'catalog/category/store':          $this->api->storeCategory($object);     break;
-                case 'catalog/category/remove':         $this->api->removeCategory($object);    break;
+                // creations or updates
+                case 'catalog/product/store':           $this->api->storeProduct($object);          break;
+                case 'sales/quote/store':               $this->api->storeQuote($object);            break;
+                case 'sales/quote_item/store':          $this->api->storeQuoteItem($object);        break;
+                case 'sales/order/store':               $this->api->storeOrder($object);            break;
+                case 'newsletter/subscriber/store':     $this->api->storeSubscriber($object);       break;
+                case 'customer/customer/store':         $this->api->storeCustomer($object);         break;
+                case 'customer/address/store':          $this->api->storeAddress($object);          break;
+                case 'sales/quote_address/store':       $this->api->storeAddress($object);          break;
+                case 'sales/order_address/store':       $this->api->storeAddress($object);          break;
+                case 'core/store/store':                $this->api->storeStore($object);            break;
+                case 'catalog/category/store':          $this->api->storeCategory($object);         break;
+
+                // removals
+                case 'newsletter/subscriber/remove':    $this->api->removeSubscriber($object);      break;
+                case 'sales/quote_item/remove':         $this->api->removeQuoteItem($object);       break;
+                case 'catalog/category/remove':         $this->api->removeCategory($object);        break;
+                case 'customer/customer/remove':        $this->api->removeCustomer($object);        break;
+                case 'customer/address/remove':         $this->api->removeAddress($object);         break;
+                case 'sales/order_address/remove':      $this->api->removeAddress($object);         break;
+                case 'sales/quote_address/remove':      $this->api->removeAddress($object);         break;
 
                 // Start sync is a more complicated task to process.
                 case '/start_sync':
@@ -199,12 +217,6 @@ class Copernica_Integration_Model_QueueProcessor
                     break;
             }
 
-            // increment processed tasks counter
-            $this->processedTasks++;
-
-            // delete the item from the queue
-            $item->delete();
-
             // store success
             $this->reporter->storeSuccess();
         }
@@ -214,9 +226,6 @@ class Copernica_Integration_Model_QueueProcessor
         {
             // tell magento to log exception
             Mage::logException($exception);
-
-            // set result message on item and set result time
-            $item->setResult($exception->getMessage())->setResultTime(date('Y-m-d H:i:s'));
 
             // store error
             $this->reporter->storeFailure($exception->getMessage(), array( 'resource' => $resourceName, 'action' => $action ));
