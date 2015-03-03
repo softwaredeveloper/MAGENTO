@@ -2,7 +2,7 @@
 <config>
     <modules>
         <Copernica_Integration>
-            <version>15.06.0</version>
+            <version>15.10.1</version>
         </Copernica_Integration>
     </modules>
     <global>
