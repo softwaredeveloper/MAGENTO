@@ -96,6 +96,47 @@ class Copernica_Integration_Model_Observer
     }
 
     /**
+     *  This method is fired when quote is modified/created.  
+     *
+     *  @listen sales_quote_save_after
+     *  @param  Varien_Event_Observer 
+     */
+    public function quoteModified(Varien_Event_Observer $observer)
+    {
+        // if the plug-in is not enabled, skip this
+        if (!$this->enabled() || !$this->isValidStore()) return;
+
+        // do we have a valid quote?
+        if ($quote = $observer->getEvent()->getQuote())
+        {
+            // add the quote to synchronize queue
+            $this->synchronize($quote);
+        }
+    }
+
+    /**
+     *  This method is fired when quote is removed.
+     *
+     *  @listen sales_quote_delete_before
+     *  @param  Varien_Event_Observer
+     */
+    public function quoteRemoved(Varien_Event_Observer $observer)
+    {
+        // if the plug-in is not enabled, skip this
+        if (!$this->enabled() || !$this->isValidStore()) return;
+
+        /**
+         *  Do we have a valid quote? We have to check if have a valid object 
+         *  and if that instance has a non zero Id.
+         */
+        if ($quote = $observer->getEvent()->getQuote() && $quote->getId())
+        {
+            // add the quote to synchronize queue
+            $this->synchronize($quote, 'remove');
+        }
+    }
+
+    /**
      *  This method is fired when an item is removed
      *  from a quote.
      *

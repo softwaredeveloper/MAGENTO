@@ -43,6 +43,22 @@
                     </integration_observer>
                 </observers>
             </core_store_save_after>
+            <sales_quote_save_after>
+                <observers>
+                    <integration_observer>
+                        <class>integration/observer</class>
+                        <method>quoteModified</method>
+                    </integration_observer>
+                </observers>
+            </sales_quote_save_after>
+            <sales_quote_delete_before>
+                <observers>
+                    <integration_observer>
+                        <class>integration/observer</class>
+                        <method>quoteRemoved</method>
+                    </integration_observer>
+                </observers>
+            </sales_quote_delete_before>
             <sales_quote_item_delete_before>
                 <observers>
                     <integration_observer>
