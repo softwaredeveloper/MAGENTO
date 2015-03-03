@@ -51,8 +51,23 @@ class Copernica_Integration_Model_Queue extends Mage_Core_Model_Abstract
         // if we our model is not an object we will just return null
         if (!is_object($model)) return null;
 
-        // retrieve the model and load it
-        return $model->load(parent::getData('entity_id'));
+        /**
+         *  Whole quote system in magento is messed up for various reasons. This
+         *  is another one. When we load quote by Id it will return empty quote
+         *  if no active webstore is selected. Since, we don't want to select a
+         *  webstore (cause this part most likely will be executed inside lightweight
+         *  cli environment), we have to explicitly tell magento to load quote
+         *  by ID without store.
+         */
+        if (parent::getData('entity_model') == 'sales/quote') $object = $model->loadByIdWithoutStore(parent::getData('entity_id'));
+
+        /**
+         *  Seems that rest of objects are loaded properly.
+         */
+        else $object = $model->load(parent::getData('entity_id'));
+
+        // return fetched object
+        return $object;
     }
 
     /**
