@@ -49,6 +49,7 @@ class Copernica_Integration_Model_SyncProcessor
         'sales/order_item',
         'newsletter/subscriber',
         'customer/address',
+        'customer/group',
     );
 
     /** 
@@ -270,6 +271,7 @@ class Copernica_Integration_Model_SyncProcessor
             case 'Mage_Sales_Model_Resource_Order_Item_Collection': return 'item_id';
             case 'Mage_Newsletter_Model_Resource_Subscriber_Collection': return 'subscriber_id';
             case 'Mage_Sales_Model_Resource_Quote_Address_Collection': return 'address_id';
+            case 'Mage_Customer_Model_Resource_Group_Collection': return 'customer_group_id';
             default: return 'entity_id';
         }
     }

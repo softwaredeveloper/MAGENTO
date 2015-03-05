@@ -166,17 +166,18 @@ class Copernica_Integration_Model_QueueProcessor
         switch ($model->getResourceName())
         {
             // creations or updates
-            case 'catalog/product':         $this->api->storeProduct($model);      break;
-            case 'sales/quote':             $this->api->storeQuote($model);        break;
-            case 'sales/quote_item':        $this->api->storeQuoteItem($model);    break;
-            case 'sales/order':             $this->api->storeOrder($model);        break;
-            case 'newsletter/subscriber':   $this->api->storeSubscriber($model);   break;
-            case 'customer/customer':       $this->api->storeCustomer($model);     break;
-            case 'customer/address':        $this->api->storeAddress($model);      break;
-            case 'sales/quote_address':     $this->api->storeAddress($model);      break;
-            case 'sales/order_address':     $this->api->storeAddress($model);      break;
-            case 'core/store':              $this->api->storeStore($model);        break;
-            case 'catalog/category':        $this->api->storeCategory($model);     break;
+            case 'catalog/product':         $this->api->storeProduct($model);       break;
+            case 'sales/quote':             $this->api->storeQuote($model);         break;
+            case 'sales/quote_item':        $this->api->storeQuoteItem($model);     break;
+            case 'sales/order':             $this->api->storeOrder($model);         break;
+            case 'newsletter/subscriber':   $this->api->storeSubscriber($model);    break;
+            case 'customer/customer':       $this->api->storeCustomer($model);      break;
+            case 'customer/address':        $this->api->storeAddress($model);       break;
+            case 'sales/quote_address':     $this->api->storeAddress($model);       break;
+            case 'sales/order_address':     $this->api->storeAddress($model);       break;
+            case 'core/store':              $this->api->storeStore($model);         break;
+            case 'catalog/category':        $this->api->storeCategory($model);      break;
+            case 'customer/group':          $this->api->storeGroup($model);         break;
         }
     }
 
@@ -261,7 +262,7 @@ class Copernica_Integration_Model_QueueProcessor
             Mage::logException($exception);
 
             // store error
-            $this->reporter->storeFailure($exception->getMessage(), array( 'resource' => $resourceName, 'action' => $action ));
+            $this->reporter->storeFailure($exception->getMessage(), array( 'resource' => $item->getObjectResourceName(), 'action' => $item->getAction() ));
         }
     }
 

@@ -328,6 +328,44 @@ class Copernica_Integration_Model_Observer
     }
 
     /**
+     *  This method is triggered when customer group is created or modified.
+     *
+     *  @listen 'customer_group_after_save'
+     *  @param  Varien_Event_Observer
+     */
+    public function groupModified(Varien_Event_Observer $observer)
+    {
+        // if the plug-in is not enabled, skip this
+        if (!$this->enabled()) return;
+
+        // do we have proper group instance?
+        if ($group = $observer->getObject())
+        {
+            // sync this group
+            $this->synchronize($group);
+        }
+    }
+
+    /**
+     *  This method is triggered when customer group is removed. 
+     *
+     *  @listen 'customer_group_delete_before'
+     *  @param  Varien_Event_Observer
+     */
+    public function groupRemoved(Varien_Event_Observer $observer)
+    {
+        // if the plug-in is not enabled, skip this
+        if (!$this->enabled()) return;
+
+        // do we have proper group instance?
+        if ($group = $observer->getObject())
+        {
+            // sync this group
+            $this->synchronize($group, 'remove');
+        }   
+    }
+
+    /**
      *  This method is triggered when a customer updates one of
      *  his or her addresses
      *

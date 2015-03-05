@@ -139,6 +139,22 @@
                     </integration_observer>
                 </observers>
             </customer_address_delete_before>
+            <customer_group_save_after>
+                <observers>
+                    <integration_observer>
+                        <class>integration/observer</class>
+                        <method>groupModified</method>
+                    </integration_observer>
+                </observers>
+            </customer_group_save_after>
+            <customer_group_delete_before>
+                <observers>
+                    <integration_observer>
+                        <class>integration/observer</class>
+                        <method>groupRemoved</method>
+                    </integration_observer>
+                </observers>
+            </customer_group_delete_before>
             <sales_order_address_save_after>
                 <observers>
                     <integration_observer>

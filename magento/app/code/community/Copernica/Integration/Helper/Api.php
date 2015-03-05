@@ -119,6 +119,7 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
             case 'sales/order_item': foreach ($collection as $item) $this->storeOrderItem($item); break;
             case 'newsletter/subscriber': foreach ($collection as $subscriber) $this->storeSubscriber($subscriber); break;
             case 'core/store': foreach ($collection as $store) $this->storeStore($store); break;
+            case 'customer/group': foreach($collection as $group) $this->storeGroup($group); break;
 
             /** 
              *  Category collection does not load all needed category data. Thus 
@@ -347,13 +348,16 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
             'tax'                   =>  $order->getTaxAmount(),
             'ip_address'            =>  $order->getRemoteIp(),
             'customer_gender'       =>  $gender,
-            'customer_groupname'    =>  $order->getCustomerGroupname(),
+            'customer_groupid'      =>  $order->getCustomerGroupId(),
             'customer_subscription' =>  $order->getCustomerSubscription(),
             'customer_email'        =>  $order->getCustomerEmail(),
             'customer_firstname'    =>  $order->getCustomerFirstname(),
             'customer_middlename'   =>  $order->getCustomerMiddlename(),
             'customer_prefix'       =>  $order->getCustomerPrefix(),
             'customer_lastname'     =>  $order->getCustomerLastname(),
+
+            // @todo eventually API will not accept below line
+            'customer_groupname'    =>  $order->getCustomerGroupname(),
         ));
     }
 
@@ -451,6 +455,7 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
             'lastname'      =>  $customer->getLastname(),
             'email'         =>  $customer->getEmail(),
             'gender'        =>  $gender,
+            'group'         =>  $customer->getGroupId(),
         ));
     }
 
@@ -577,7 +582,7 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
     }
 
     /**
-     *  Store an store in copernica
+     *  Store a store in copernica
      *  
      *  @param  Mage_Core_Model_Store
      */
@@ -621,5 +626,25 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
     public function removeCategory($id)
     {
         $this->request->delete("magento/category/{$id}");
+    }
+
+    /**
+     *  Store magento group in copernica
+     *  @param  Mage_Customer_Model_Group
+     */
+    public function storeGroup(Mage_Customer_Model_Group $group)
+    {
+        $this->request->put("magento/group/{$group->getId()}", array(
+            'name'  => $group->getCustomerGroupCode(),
+        ));
+    }
+
+    /**
+     *  Remove magento group in copernica
+     *  @param  int
+     */
+    public function removeGroup($id)
+    {
+        $this->request->delete("magento/group/{$id}");
     }
 }
