@@ -153,17 +153,78 @@ class Copernica_Integration_Model_QueueProcessor
     }
 
     /**
+     *  There is number of entities that we can store. This method will detect
+     *  which entity we want to store inside copernica.
+     *
+     *  @param  Mage_Core_Model_Abstract
+     *  @throws Exception   If something really bad happens an exception will be 
+     *                      rised as indication of error. Such exception should
+     *                      be handled by caller.
+     */
+    private function handleStore($model)
+    {
+        switch ($model->getResourceName())
+        {
+            // creations or updates
+            case 'catalog/product':         $this->api->storeProduct($model);      break;
+            case 'sales/quote':             $this->api->storeQuote($model);        break;
+            case 'sales/quote_item':        $this->api->storeQuoteItem($model);    break;
+            case 'sales/order':             $this->api->storeOrder($model);        break;
+            case 'newsletter/subscriber':   $this->api->storeSubscriber($model);   break;
+            case 'customer/customer':       $this->api->storeCustomer($model);     break;
+            case 'customer/address':        $this->api->storeAddress($model);      break;
+            case 'sales/quote_address':     $this->api->storeAddress($model);      break;
+            case 'sales/order_address':     $this->api->storeAddress($model);      break;
+            case 'core/store':              $this->api->storeStore($model);        break;
+            case 'catalog/category':        $this->api->storeCategory($model);     break;
+        }
+    }
+
+    /**
+     *  There is number of entities that we can remove from Copernica. This method
+     *  will call proper api call to execute removal.
+     *
+     *  @param  string      Entity model identifier.
+     *  @param  int         Entity ID
+     *  @throws Exception   If something really bad happens an exception will be 
+     *                      rised as indication of error. Such exception should
+     *                      be handled by caller.
+     */
+    private function handleRemoval($entityResource, $entityId)
+    {
+        switch($entityResource)
+        {
+            case 'newsletter/subscriber':   $this->api->removeSubscriber($entityId);            break;
+            case 'sales/quote_item':        $this->api->removeQuoteItem($entityId);             break;
+            case 'catalog/category':        $this->api->removeCategory($entityId);              break;
+            case 'customer/customer':       $this->api->removeCustomer($entityId);              break;
+            case 'customer/address':        $this->api->removeAddress($entityId, 'customer');   break;
+            case 'sales/order_address':     $this->api->removeAddress($entityId, 'order');      break;
+            case 'sales/quote_address':     $this->api->removeAddress($entityId, 'quote');      break;
+        }
+    }
+
+    /**
+     *  Full sync action is a special action. This method will initiate sync or
+     *  pick up from previous state (if there is one).
+     */
+    private function handleSync()
+    {
+        // create sync processor that will process more items at once
+        $syncProcessor = Mage::getModel('integration/SyncProcessor');
+        $syncProcessor->process();
+
+        // if sync processor was not complete we should respaws task on queue
+        if (!$syncProcessor->isComplete()) Mage::getModel('integration/queue')->setAction('start_sync')->save();
+    }
+
+    /**
      *  Process a queue item
      *
      *  @param  Copernica_Integration_Model_Queue item to synchronize
      */
     private function processItem(Copernica_Integration_Model_Queue $item)
     {
-        // retrieve the object to synchronize and the action to log
-        $object = $item->getObject();
-        $action = $item->getAction();
-        $resourceName = !is_null($object) ? $object->getResourceName() : '';
-
         // increment processed tasks counter
         $this->processedTasks++;
 
@@ -178,43 +239,15 @@ class Copernica_Integration_Model_QueueProcessor
 
         try
         {
-            // what type of object are we synchronizing and what happened to it?
-            switch ("{$resourceName}/{$action}")
+            /**
+             *  Every action is little bit different from other ones. We have
+             *  specialized methods that will take care each of them.
+             */
+            switch($item->getAction()) 
             {
-                // creations or updates
-                case 'catalog/product/store':           $this->api->storeProduct($object);          break;
-                case 'sales/quote/store':               $this->api->storeQuote($object);            break;
-                case 'sales/quote_item/store':          $this->api->storeQuoteItem($object);        break;
-                case 'sales/order/store':               $this->api->storeOrder($object);            break;
-                case 'newsletter/subscriber/store':     $this->api->storeSubscriber($object);       break;
-                case 'customer/customer/store':         $this->api->storeCustomer($object);         break;
-                case 'customer/address/store':          $this->api->storeAddress($object);          break;
-                case 'sales/quote_address/store':       $this->api->storeAddress($object);          break;
-                case 'sales/order_address/store':       $this->api->storeAddress($object);          break;
-                case 'core/store/store':                $this->api->storeStore($object);            break;
-                case 'catalog/category/store':          $this->api->storeCategory($object);         break;
-
-                // removals
-                case 'newsletter/subscriber/remove':    $this->api->removeSubscriber($object);      break;
-                case 'sales/quote_item/remove':         $this->api->removeQuoteItem($object);       break;
-                case 'catalog/category/remove':         $this->api->removeCategory($object);        break;
-                case 'customer/customer/remove':        $this->api->removeCustomer($object);        break;
-                case 'customer/address/remove':         $this->api->removeAddress($object);         break;
-                case 'sales/order_address/remove':      $this->api->removeAddress($object);         break;
-                case 'sales/quote_address/remove':      $this->api->removeAddress($object);         break;
-
-                // Start sync is a more complicated task to process.
-                case '/start_sync':
-                    // create sync processor that will process more items at once
-                    $syncProcessor = Mage::getModel('integration/SyncProcessor');
-                    $syncProcessor->process();
-
-                    // if sync processor was not complete we should respaws task on queue
-                    if (!$syncProcessor->isComplete()) 
-                        Mage::getModel('integration/queue')->setAction('start_sync')->save();
-
-                    // we are done here
-                    break;
+                case 'start_sync':  $this->handleSync(); break;
+                case 'store':       $this->handleStore($item->getObject()); break;
+                case 'remove':      $this->handleRemoval($item->getObjectResourceName(), $item->getObjectId()); break;
             }
 
             // store success

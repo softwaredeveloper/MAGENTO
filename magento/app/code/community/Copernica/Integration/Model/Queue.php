@@ -71,6 +71,26 @@ class Copernica_Integration_Model_Queue extends Mage_Core_Model_Abstract
     }
 
     /**
+     *  Get the object model Id.
+     *
+     *  @return int
+     */
+    public function getObjectId()
+    {
+        return parent::getData('entity_id');
+    }
+
+    /**
+     *  Get resource indentifier.
+     *
+     *  @return string
+     */
+    public function getObjectResourceName()
+    {
+        return parent::getData('entity_model');
+    }
+
+    /**
      *  Set the data to the model
      *
      *  @param  Mage_Core_Model_Abstract    the model to store

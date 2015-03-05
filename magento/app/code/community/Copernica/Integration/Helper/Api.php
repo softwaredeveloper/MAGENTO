@@ -253,12 +253,12 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
     /**
      *  Remove a quote item from copernica
      *
-     *  @param  Mage_Sales_Model_Quote_Item the quote item that was removed
+     *  @param  int     The quote item Id
      */
-    public function removeQuoteItem(Mage_Sales_Model_Quote_Item $item)
+    public function removeQuoteItem($id)
     {
         // remove the quote item
-        $this->request->delete("magento/quoteitem/{$item->getId()}");
+        $this->request->delete("magento/quoteitem/{$id}");
     }
 
     /**
@@ -418,12 +418,12 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
     /**
      *  Remove a newsletter subscriber from copernica
      *
-     *  @param  Mage_Newsletter_Model_Subscriber    the subscriber that was removed
+     *  @param  int     The subscriber Id
      */
-    public function removeSubscriber(Mage_Newsletter_Model_Subscriber $subscriber)
+    public function removeSubscriber($id)
     {
         // remove the quote
-        $this->request->delete("magento/subscriber/{$subscriber->getId()}");
+        $this->request->delete("magento/subscriber/{$id}");
     }
 
     /**
@@ -457,12 +457,12 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
     /**
      *  Remove a customer from copernica
      *
-     *  @param  Mage_Customer_Model_Customer    the customer that was removed
+     *  @param  int     The customer Id
      */
-    public function removeCustomer(Mage_Customer_Model_Customer $customer)
+    public function removeCustomer($id)
     {
         // remove the customer
-        $this->request->delete("magento/customer/{$customer->getId()}");
+        $this->request->delete("magento/customer/{$id}");
     }
 
     /**
@@ -564,21 +564,16 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
 
     /**
      *  Remove magento address from copernica platform
-     *  @param  Mage_Customer_Model_Address_Abstract
+     *  @param  int     The address Id
+     *  @param  string  Type of address. It should be one of ['customer', 'order', 'quote']
      */
-    public function removeAddress(Mage_Customer_Model_Address_Abstract $address)
+    public function removeAddress($id, $type)
     {
-        /**
-         *  Similar to store action we have to detect what kind of address we are
-         *  dealing with and add additional type parameter.
-         */
-        if ($address instanceof Mage_Customer_Model_Address) $type = 'customer';
-        else if ($address instanceof Mage_Sales_Model_Order_Address) $type = 'order';
-        else if ($address instanceof Mage_Sales_Model_Quote_Address) $type = 'quote';
-        else return;
+        // we can handle only customer, order or quote addresses
+        if (!in_array($type, array('customer', 'order', 'quote'))) return;
 
         // remove address
-        $this->request->delete("magento/address", array( 'ID' => $address->getId(), 'type' => $type));
+        $this->request->delete("magento/address", array( 'ID' => $id, 'type' => $type));
     }
 
     /**
@@ -621,10 +616,10 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
 
     /**
      *  Remove magento category in copernica
-     *  @param Mage_Catalog_Model_Category
+     *  @param int  The category Id
      */
-    public function removeCategory(Mage_Catalog_Model_Category $category)
+    public function removeCategory($id)
     {
-        $this->request->delete("magento/category/{$category->getId()}");
+        $this->request->delete("magento/category/{$id}");
     }
 }

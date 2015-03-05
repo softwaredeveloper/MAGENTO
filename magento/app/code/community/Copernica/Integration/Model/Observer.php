@@ -129,7 +129,8 @@ class Copernica_Integration_Model_Observer
          *  Do we have a valid quote? We have to check if have a valid object 
          *  and if that instance has a non zero Id.
          */
-        if (is_object($quote = $observer->getEvent()->getQuote()) && $quote->getId())
+        $quote = $quote = $observer->getEvent()->getQuote();
+        if (is_object($quote) && $quote->getId())
         {
             // add the quote to synchronize queue
             $this->synchronize($quote, 'remove');
