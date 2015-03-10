@@ -214,6 +214,7 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
             'uri'           =>  $product->getProductUrl(),
             'image'         =>  $product->getImageUrl(),
             'categories'    =>  $product->getCategoryIds(),
+            'type'          =>  $product->getTypeId(),
         ));
     }
 
@@ -302,13 +303,14 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
 
         // store the quote item
         $this->request->put("magento/quoteitem/{$item->getId()}", array(
-            'quote'     =>  $item->getQuoteId(),
-            'product'   =>  $item->getProductId(),
-            'quantity'  =>  $item->getQty(),
-            'price'     =>  $item->getPrice(),
-            'currency'  =>  $quote->getQuoteCurrencyCode(),
-            'weight'    =>  $item->getWeight(),
-            'address'   =>  is_object($quoteItemShippingAddress) ? $quoteItemShippingAddress->getAddress()->getId() : null,
+            'quote'         =>  $item->getQuoteId(),
+            'product'       =>  $item->getProductId(),
+            'quantity'      =>  $item->getQty(),
+            'price'         =>  $item->getPrice(),
+            'currency'      =>  $quote->getQuoteCurrencyCode(),
+            'weight'        =>  $item->getWeight(),
+            'address'       =>  is_object($quoteItemShippingAddress) ? $quoteItemShippingAddress->getAddress()->getId() : null,
+            'parentItem'    =>  ($parentId = $item->getParentItemId()) ? intval($parentId) : null,
         ));
     }
 
@@ -373,12 +375,13 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
 
         // store the order item
         $this->request->put("magento/orderitem/{$item->getId()}", array(
-            'order'     =>  $item->getOrderId(),
-            'product'   =>  $item->getProductId(),
-            'quantity'  =>  $item->getData('qty_ordered'),
-            'price'     =>  $item->getPrice(),
-            'currency'  =>  $item->getOrder()->getOrderCurrencyCode(),
-            'weight'    =>  $item->getWeight(),
+            'order'         =>  $item->getOrderId(),
+            'product'       =>  $item->getProductId(),
+            'quantity'      =>  $item->getData('qty_ordered'),
+            'price'         =>  $item->getPrice(),
+            'currency'      =>  $item->getOrder()->getOrderCurrencyCode(),
+            'weight'        =>  $item->getWeight(),
+            'parentItem'    =>  ($parentId = $item->getParentItemId()) ? intval($parentId) : null,
         ));
     }
 

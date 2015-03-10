@@ -179,13 +179,6 @@ class Copernica_Integration_Model_Observer
         // Do we have a valid item?
         if ($item = $observer->getEvent()->getItem())
         {
-            /**
-             *  If this quote item has a parent, an update event will be
-             *  triggered for this parent item and we need not synchronize
-             *  this quote item now to avoid unnecessary communication
-             */
-            if ($item->getParentItemId()) return;
-
             // if there is no valid customer we do not care about the quote
             if (!$item->getQuote()->getCustomerId()) return;
 

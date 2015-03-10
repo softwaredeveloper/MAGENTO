@@ -92,21 +92,83 @@ class Copernica_Integration_Model_SyncProcessor
     }
 
     /**
+     *  This method will try to count the total amount of all collection that has
+     *  to be synchronized with Copernica platform. Since this value will change
+     *  over time (new entities will be created) it should be used as estimate
+     *  value.
+     *
+     *  @return int
+     */
+    private function getTasksTotal()
+    {
+        // variable for counting
+        $total = 0;
+
+        // iterate over all collection and count them.
+        foreach ($this->models as $model)
+        {
+            /**
+             *  It seems that magento does not allow to fetch collection of all
+             *  quote items just like that. It requires from us to provide quote
+             *  ID for that collection. We don't want to iterate over every quote
+             *  and fetch collection from it and count that collection and so. 
+             *  Instead we can just make a raw query on table that holds quote 
+             *  items and count all rows.
+             */
+            if ($model == 'sales/quote_item')
+            {
+                // get overall resource
+                $resource = Mage::getSingleton('core/resource');
+
+                // get connection 
+                $connection = $resource->getConnection('core_read');
+
+                // get quotes items table name
+                $table = $resource->getTableName('sales/quote_item');
+
+                // execute query and add the result to total
+                $total += $connection->fetchOne(sprintf("SELECT count(*) FROM %s", $table));
+            } 
+
+            // use standard ::getSize() method to get collection length
+            else $total += Mage::getModel($model)->getCollection()->getSize();
+        }
+
+        // return computed value
+        return $total;
+    }
+
+    /**
      *  Load last state.
      */
     private function loadState ()
     {
-        // get state from config
-        $state = json_decode(Mage::helper('integration/config')->getSyncState());
+        // load state from cachce
+        $state = json_decode(Mage::app()->getCache()->load('copernica_sync_status'));
 
-        // if we have a null state then we will just use default state
-        if (is_null($state)) return;
+        /**
+         *  If we have state we should load state variables and be done with it.
+         */
+        if ($state)
+        {
+            $this->currentModel = $state->model;
+            $this->lastModelId = $state->id;
+        }
 
-        // assign current model from state
-        $this->currentModel = $state->model;
-
-        // assign last model id from state
-        $this->lastModelId = $state->id;
+        /**
+         *  If we don't have a state then we can use default state. Thus, we don't
+         *  have estimates at all. We can calculate estimates right now.
+         */
+        else
+        {
+            /**
+             *  When we are making full magento sync it's very handy to know how
+             *  many items we synced and how many items we should sync in total.
+             *  This cache entry will store estimate on how many items there is 
+             *  in total.
+             */
+            Mage::app()->getCache()->save((string)$this->getTasksTotal(), 'copernica_sync_total', array('COPERNICA_INTEGRATION'));
+        }
     }
 
     /** 
@@ -117,8 +179,8 @@ class Copernica_Integration_Model_SyncProcessor
         // create current state object
         $state = array('model' => $this->currentModel, 'id' => $this->lastModelId);
 
-        // store state object as JSON in config
-        Mage::helper('integration/config')->setSyncState(json_encode($state));
+        // store sync state inside cache
+        Mage::app()->getCache()->save(json_encode($state), 'copernica_sync_status', array('COPERNICA_INTEGRATION'));
     }
 
     /**
@@ -126,8 +188,9 @@ class Copernica_Integration_Model_SyncProcessor
      */
     private function resetState()
     {
-        // unset sync state
-        Mage::helper('integration/config')->unsSyncState();
+        Mage::app()->getCache()->remove('copernica_sync_status');
+        Mage::app()->getCache()->remove('copernica_sync_total');
+        Mage::app()->getCache()->remove('copernica_sync_progress');
     }
 
     /**
@@ -167,6 +230,13 @@ class Copernica_Integration_Model_SyncProcessor
             }
         }
 
+        /**
+         *  We want to store the actual progress of sync. Thus we have to store 
+         *  amount of synced elements.
+         */
+        $progress = ($progress = Mage::app()->getCache()->load('copernica_sync_progress')) ? $progress+$counter : $counter;
+        Mage::app()->getCache()->save((string)$progress, 'copernica_sync_progress', array('COPERNICA_INTEGRATION')); 
+        
         // we are done so we can store current state
         $this->storeState();
     }
@@ -224,7 +294,7 @@ class Copernica_Integration_Model_SyncProcessor
          *  We can not process quote items collection in same way that we do 
          *  with other collections (cause they are not usable when there is 
          *  no quote assigned to such collection). So we have to make it a little
-         *  bit more custom. 
+         *  bit more custom.
          */
         if ($this->currentModel == 'sales/quote_item') return $this->getQuoteItemsCollection();
 

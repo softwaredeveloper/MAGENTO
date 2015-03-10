@@ -170,6 +170,7 @@ class Copernica_Integration_Model_QueueProcessor
             case 'sales/quote':             $this->api->storeQuote($model);         break;
             case 'sales/quote_item':        $this->api->storeQuoteItem($model);     break;
             case 'sales/order':             $this->api->storeOrder($model);         break;
+            case 'sales/order_item':        $this->api->storeOrderItem($model);     break;
             case 'newsletter/subscriber':   $this->api->storeSubscriber($model);    break;
             case 'customer/customer':       $this->api->storeCustomer($model);      break;
             case 'customer/address':        $this->api->storeAddress($model);       break;
@@ -231,10 +232,10 @@ class Copernica_Integration_Model_QueueProcessor
 
         /**
          *  Since we are processing item right now (well about to make the 
-         *  processing happen), we want to remote the item from the queue. We 
+         *  processing happen), we want to remove the item from the queue. We 
          *  know all the data that we need so there is no point of keeping that 
-         *  item around. Also it can influence if nedded items will be added to 
-         *  the queue. ('start_sync' action)
+         *  item around. Also, queue items check if they are duplicates when they
+         *  are saved, so we want to remove queue item as soon as possible.
          */
         $item->delete();
 
