@@ -177,6 +177,25 @@ function timeoutSync()
                         </tr>
                     <?php
                     } ?>
+                    <?php if (Mage::helper('integration')->isSynchronisationStartScheduled()) { ?> 
+                        <tr>
+                            <td class="label">
+                                <?php echo $this->__("Full synchronization process:"); ?>
+                            </td>
+                            <td class="value">
+
+                                <?php if (Mage::helper('integration/config')->getSyncTotal()) { ?>
+                                    <strong>
+                                        <?php echo Mage::helper('integration/config')->getSyncProgress(); ?> / <?php echo Mage::helper('integration/config')->getSyncTotal();  ?>
+                                    </strong>
+                                <?php } else { ?>
+                                    <strong>
+                                        <?php echo $this->__("Waiting for estimation"); ?>
+                                    </strong>
+                                <?php } ?>
+                            </td>
+                        </tr>
+                    <?php } ?>
                 </tbody>
             </table>
         </div>

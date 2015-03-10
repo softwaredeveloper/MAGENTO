@@ -54,6 +54,18 @@
  *
  *      // get value of 'some_property'
  *      $value = $config->getSomeProperty();
+ *
+ *  Known configuration names:
+ *  
+ *      -   sync_progress   This option is used to store current amount of processed
+ *                          entities within start_sync task
+ *
+ *      -   sync_total      This option is used to store total amount of to be processed
+ *                          entities within start_sync task
+ *
+ *      -   sync_state      This option stores serialized data about start_sync
+ *                          task.
+ *
  */
 class Copernica_Integration_Helper_Config extends Mage_Core_Helper_Abstract
 {

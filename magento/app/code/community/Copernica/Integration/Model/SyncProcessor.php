@@ -138,13 +138,36 @@ class Copernica_Integration_Model_SyncProcessor
         return $total;
     }
 
+    /** 
+     *  Store current state
+     */
+    private function storeState()
+    {
+        // create current state object
+        $state = array('model' => $this->currentModel, 'id' => $this->lastModelId);
+
+        // store state object as JSON in config
+        Mage::helper('integration/config')->setSyncState(json_encode($state));
+    }
+
+    /**
+     *  Reset current state
+     */
+    private function resetState()
+    {
+        // unset sync state
+        Mage::helper('integration/config')->unsSyncState();
+        Mage::helper('integration/config')->unsSyncTotal();
+        Mage::helper('integration/config')->unsSyncProgress();
+    }
+
     /**
      *  Load last state.
      */
     private function loadState ()
     {
         // load state from cachce
-        $state = json_decode(Mage::app()->getCache()->load('copernica_sync_status'));
+        $state = json_decode(Mage::helper('integration/config')->getSyncState());
 
         /**
          *  If we have state we should load state variables and be done with it.
@@ -159,38 +182,7 @@ class Copernica_Integration_Model_SyncProcessor
          *  If we don't have a state then we can use default state. Thus, we don't
          *  have estimates at all. We can calculate estimates right now.
          */
-        else
-        {
-            /**
-             *  When we are making full magento sync it's very handy to know how
-             *  many items we synced and how many items we should sync in total.
-             *  This cache entry will store estimate on how many items there is 
-             *  in total.
-             */
-            Mage::app()->getCache()->save((string)$this->getTasksTotal(), 'copernica_sync_total', array('COPERNICA_INTEGRATION'));
-        }
-    }
-
-    /** 
-     *  Store current state
-     */
-    private function storeState()
-    {
-        // create current state object
-        $state = array('model' => $this->currentModel, 'id' => $this->lastModelId);
-
-        // store sync state inside cache
-        Mage::app()->getCache()->save(json_encode($state), 'copernica_sync_status', array('COPERNICA_INTEGRATION'));
-    }
-
-    /**
-     *  Reset current state
-     */
-    private function resetState()
-    {
-        Mage::app()->getCache()->remove('copernica_sync_status');
-        Mage::app()->getCache()->remove('copernica_sync_total');
-        Mage::app()->getCache()->remove('copernica_sync_progress');
+        else Mage::helper('integration/config')->setSyncTotal($this->getTasksTotal());
     }
 
     /**
@@ -234,8 +226,8 @@ class Copernica_Integration_Model_SyncProcessor
          *  We want to store the actual progress of sync. Thus we have to store 
          *  amount of synced elements.
          */
-        $progress = ($progress = Mage::app()->getCache()->load('copernica_sync_progress')) ? $progress+$counter : $counter;
-        Mage::app()->getCache()->save((string)$progress, 'copernica_sync_progress', array('COPERNICA_INTEGRATION')); 
+        $progress = ($progress = Mage::helper('integration/config')->getSyncProgress()) ? $progress+$counter : $counter;
+        Mage::helper('integration/config')->setSyncProgress($progress);
         
         // we are done so we can store current state
         $this->storeState();

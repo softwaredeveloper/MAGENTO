@@ -6,15 +6,6 @@
         </Copernica_Integration>
     </modules>
     <global>
-        <cache>
-            <types>
-                 <copernica_integration module="integration" translate="Copernica intergration cache">
-                    <label>Copernica integration</label>
-                    <description>Copernica integration cache. It's used to keep track of synchronization data.</description>
-                    <tags>COPERNICA_INTEGRATION</tags>
-                 </copernica_integration>
-            </types>
-        </cache>
         <models>
             <integration>
                 <class>Copernica_Integration_Model</class>
