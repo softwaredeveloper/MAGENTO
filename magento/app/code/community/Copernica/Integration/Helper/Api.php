@@ -119,6 +119,7 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
             case 'sales/order_item': foreach ($collection as $item) $this->storeOrderItem($item); break;
             case 'newsletter/subscriber': foreach ($collection as $subscriber) $this->storeSubscriber($subscriber); break;
             case 'core/store': foreach ($collection as $store) $this->storeStore($store); break;
+            case 'customer/group': foreach($collection as $group) $this->storeGroup($group); break;
 
             /** 
              *  Category collection does not load all needed category data. Thus 
@@ -213,6 +214,7 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
             'uri'           =>  $product->getProductUrl(),
             'image'         =>  $product->getImageUrl(),
             'categories'    =>  $product->getCategoryIds(),
+            'type'          =>  $product->getTypeId(),
         ));
     }
 
@@ -253,12 +255,12 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
     /**
      *  Remove a quote item from copernica
      *
-     *  @param  Mage_Sales_Model_Quote_Item the quote item that was removed
+     *  @param  int     The quote item Id
      */
-    public function removeQuoteItem(Mage_Sales_Model_Quote_Item $item)
+    public function removeQuoteItem($id)
     {
         // remove the quote item
-        $this->request->delete("magento/quoteitem/{$item->getId()}");
+        $this->request->delete("magento/quoteitem/{$id}");
     }
 
     /**
@@ -301,13 +303,14 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
 
         // store the quote item
         $this->request->put("magento/quoteitem/{$item->getId()}", array(
-            'quote'     =>  $item->getQuoteId(),
-            'product'   =>  $item->getProductId(),
-            'quantity'  =>  $item->getQty(),
-            'price'     =>  $item->getPrice(),
-            'currency'  =>  $quote->getQuoteCurrencyCode(),
-            'weight'    =>  $item->getWeight(),
-            'address'   =>  is_object($quoteItemShippingAddress) ? $quoteItemShippingAddress->getAddress()->getId() : null,
+            'quote'         =>  $item->getQuoteId(),
+            'product'       =>  $item->getProductId(),
+            'quantity'      =>  $item->getQty(),
+            'price'         =>  $item->getPrice(),
+            'currency'      =>  $quote->getQuoteCurrencyCode(),
+            'weight'        =>  $item->getWeight(),
+            'address'       =>  is_object($quoteItemShippingAddress) ? $quoteItemShippingAddress->getAddress()->getId() : null,
+            'parentItem'    =>  ($parentId = $item->getParentItemId()) ? intval($parentId) : null,
         ));
     }
 
@@ -347,13 +350,16 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
             'tax'                   =>  $order->getTaxAmount(),
             'ip_address'            =>  $order->getRemoteIp(),
             'customer_gender'       =>  $gender,
-            'customer_groupname'    =>  $order->getCustomerGroupname(),
+            'customer_groupid'      =>  $order->getCustomerGroupId(),
             'customer_subscription' =>  $order->getCustomerSubscription(),
             'customer_email'        =>  $order->getCustomerEmail(),
             'customer_firstname'    =>  $order->getCustomerFirstname(),
             'customer_middlename'   =>  $order->getCustomerMiddlename(),
             'customer_prefix'       =>  $order->getCustomerPrefix(),
             'customer_lastname'     =>  $order->getCustomerLastname(),
+
+            // @todo eventually API will not accept below line
+            'customer_groupname'    =>  $order->getCustomerGroupname(),
         ));
     }
 
@@ -369,12 +375,13 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
 
         // store the order item
         $this->request->put("magento/orderitem/{$item->getId()}", array(
-            'order'     =>  $item->getOrderId(),
-            'product'   =>  $item->getProductId(),
-            'quantity'  =>  $item->getData('qty_ordered'),
-            'price'     =>  $item->getPrice(),
-            'currency'  =>  $item->getOrder()->getOrderCurrencyCode(),
-            'weight'    =>  $item->getWeight(),
+            'order'         =>  $item->getOrderId(),
+            'product'       =>  $item->getProductId(),
+            'quantity'      =>  $item->getData('qty_ordered'),
+            'price'         =>  $item->getPrice(),
+            'currency'      =>  $item->getOrder()->getOrderCurrencyCode(),
+            'weight'        =>  $item->getWeight(),
+            'parentItem'    =>  ($parentId = $item->getParentItemId()) ? intval($parentId) : null,
         ));
     }
 
@@ -418,12 +425,12 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
     /**
      *  Remove a newsletter subscriber from copernica
      *
-     *  @param  Mage_Newsletter_Model_Subscriber    the subscriber that was removed
+     *  @param  int     The subscriber Id
      */
-    public function removeSubscriber(Mage_Newsletter_Model_Subscriber $subscriber)
+    public function removeSubscriber($id)
     {
         // remove the quote
-        $this->request->delete("magento/subscriber/{$subscriber->getId()}");
+        $this->request->delete("magento/subscriber/{$id}");
     }
 
     /**
@@ -451,18 +458,19 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
             'lastname'      =>  $customer->getLastname(),
             'email'         =>  $customer->getEmail(),
             'gender'        =>  $gender,
+            'group'         =>  $customer->getGroupId(),
         ));
     }
 
     /**
      *  Remove a customer from copernica
      *
-     *  @param  Mage_Customer_Model_Customer    the customer that was removed
+     *  @param  int     The customer Id
      */
-    public function removeCustomer(Mage_Customer_Model_Customer $customer)
+    public function removeCustomer($id)
     {
         // remove the customer
-        $this->request->delete("magento/customer/{$customer->getId()}");
+        $this->request->delete("magento/customer/{$id}");
     }
 
     /**
@@ -564,25 +572,20 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
 
     /**
      *  Remove magento address from copernica platform
-     *  @param  Mage_Customer_Model_Address_Abstract
+     *  @param  int     The address Id
+     *  @param  string  Type of address. It should be one of ['customer', 'order', 'quote']
      */
-    public function removeAddress(Mage_Customer_Model_Address_Abstract $address)
+    public function removeAddress($id, $type)
     {
-        /**
-         *  Similar to store action we have to detect what kind of address we are
-         *  dealing with and add additional type parameter.
-         */
-        if ($address instanceof Mage_Customer_Model_Address) $type = 'customer';
-        else if ($address instanceof Mage_Sales_Model_Order_Address) $type = 'order';
-        else if ($address instanceof Mage_Sales_Model_Quote_Address) $type = 'quote';
-        else return;
+        // we can handle only customer, order or quote addresses
+        if (!in_array($type, array('customer', 'order', 'quote'))) return;
 
         // remove address
-        $this->request->delete("magento/address", array( 'ID' => $address->getId(), 'type' => $type));
+        $this->request->delete("magento/address", array( 'ID' => $id, 'type' => $type));
     }
 
     /**
-     *  Store an store in copernica
+     *  Store a store in copernica
      *  
      *  @param  Mage_Core_Model_Store
      */
@@ -621,10 +624,30 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
 
     /**
      *  Remove magento category in copernica
-     *  @param Mage_Catalog_Model_Category
+     *  @param int  The category Id
      */
-    public function removeCategory(Mage_Catalog_Model_Category $category)
+    public function removeCategory($id)
     {
-        $this->request->delete("magento/category/{$category->getId()}");
+        $this->request->delete("magento/category/{$id}");
+    }
+
+    /**
+     *  Store magento group in copernica
+     *  @param  Mage_Customer_Model_Group
+     */
+    public function storeGroup(Mage_Customer_Model_Group $group)
+    {
+        $this->request->put("magento/group/{$group->getId()}", array(
+            'name'  => $group->getCustomerGroupCode(),
+        ));
+    }
+
+    /**
+     *  Remove magento group in copernica
+     *  @param  int
+     */
+    public function removeGroup($id)
+    {
+        $this->request->delete("magento/group/{$id}");
     }
 }

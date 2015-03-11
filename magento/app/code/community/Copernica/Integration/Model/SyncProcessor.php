@@ -49,6 +49,7 @@ class Copernica_Integration_Model_SyncProcessor
         'sales/order_item',
         'newsletter/subscriber',
         'customer/address',
+        'customer/group',
     );
 
     /** 
@@ -91,21 +92,50 @@ class Copernica_Integration_Model_SyncProcessor
     }
 
     /**
-     *  Load last state.
+     *  This method will try to count the total amount of all collection that has
+     *  to be synchronized with Copernica platform. Since this value will change
+     *  over time (new entities will be created) it should be used as estimate
+     *  value.
+     *
+     *  @return int
      */
-    private function loadState ()
+    private function getTasksTotal()
     {
-        // get state from config
-        $state = json_decode(Mage::helper('integration/config')->getSyncState());
+        // variable for counting
+        $total = 0;
 
-        // if we have a null state then we will just use default state
-        if (is_null($state)) return;
+        // iterate over all collection and count them.
+        foreach ($this->models as $model)
+        {
+            /**
+             *  It seems that magento does not allow to fetch collection of all
+             *  quote items just like that. It requires from us to provide quote
+             *  ID for that collection. We don't want to iterate over every quote
+             *  and fetch collection from it and count that collection and so. 
+             *  Instead we can just make a raw query on table that holds quote 
+             *  items and count all rows.
+             */
+            if ($model == 'sales/quote_item')
+            {
+                // get overall resource
+                $resource = Mage::getSingleton('core/resource');
 
-        // assign current model from state
-        $this->currentModel = $state->model;
+                // get connection 
+                $connection = $resource->getConnection('core_read');
 
-        // assign last model id from state
-        $this->lastModelId = $state->id;
+                // get quotes items table name
+                $table = $resource->getTableName('sales/quote_item');
+
+                // execute query and add the result to total
+                $total += $connection->fetchOne(sprintf("SELECT count(*) FROM %s", $table));
+            } 
+
+            // use standard ::getSize() method to get collection length
+            else $total += Mage::getModel($model)->getCollection()->getSize();
+        }
+
+        // return computed value
+        return $total;
     }
 
     /** 
@@ -127,6 +157,32 @@ class Copernica_Integration_Model_SyncProcessor
     {
         // unset sync state
         Mage::helper('integration/config')->unsSyncState();
+        Mage::helper('integration/config')->unsSyncTotal();
+        Mage::helper('integration/config')->unsSyncProgress();
+    }
+
+    /**
+     *  Load last state.
+     */
+    private function loadState ()
+    {
+        // load state from cachce
+        $state = json_decode(Mage::helper('integration/config')->getSyncState());
+
+        /**
+         *  If we have state we should load state variables and be done with it.
+         */
+        if ($state)
+        {
+            $this->currentModel = $state->model;
+            $this->lastModelId = $state->id;
+        }
+
+        /**
+         *  If we don't have a state then we can use default state. Thus, we don't
+         *  have estimates at all. We can calculate estimates right now.
+         */
+        else Mage::helper('integration/config')->setSyncTotal($this->getTasksTotal());
     }
 
     /**
@@ -166,6 +222,13 @@ class Copernica_Integration_Model_SyncProcessor
             }
         }
 
+        /**
+         *  We want to store the actual progress of sync. Thus we have to store 
+         *  amount of synced elements.
+         */
+        $progress = ($progress = Mage::helper('integration/config')->getSyncProgress()) ? $progress+$counter : $counter;
+        Mage::helper('integration/config')->setSyncProgress($progress);
+        
         // we are done so we can store current state
         $this->storeState();
     }
@@ -223,7 +286,7 @@ class Copernica_Integration_Model_SyncProcessor
          *  We can not process quote items collection in same way that we do 
          *  with other collections (cause they are not usable when there is 
          *  no quote assigned to such collection). So we have to make it a little
-         *  bit more custom. 
+         *  bit more custom.
          */
         if ($this->currentModel == 'sales/quote_item') return $this->getQuoteItemsCollection();
 
@@ -270,6 +333,7 @@ class Copernica_Integration_Model_SyncProcessor
             case 'Mage_Sales_Model_Resource_Order_Item_Collection': return 'item_id';
             case 'Mage_Newsletter_Model_Resource_Subscriber_Collection': return 'subscriber_id';
             case 'Mage_Sales_Model_Resource_Quote_Address_Collection': return 'address_id';
+            case 'Mage_Customer_Model_Resource_Group_Collection': return 'customer_group_id';
             default: return 'entity_id';
         }
     }

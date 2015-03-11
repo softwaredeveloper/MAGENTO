@@ -96,6 +96,48 @@ class Copernica_Integration_Model_Observer
     }
 
     /**
+     *  This method is fired when quote is modified/created.  
+     *
+     *  @listen sales_quote_save_after
+     *  @param  Varien_Event_Observer 
+     */
+    public function quoteModified(Varien_Event_Observer $observer)
+    {
+        // if the plug-in is not enabled, skip this
+        if (!$this->enabled() || !$this->isValidStore()) return;
+
+        // do we have a valid quote?
+        if ($quote = $observer->getEvent()->getQuote())
+        {
+            // add the quote to synchronize queue
+            $this->synchronize($quote);
+        }
+    }
+
+    /**
+     *  This method is fired when quote is removed.
+     *
+     *  @listen sales_quote_delete_before
+     *  @param  Varien_Event_Observer
+     */
+    public function quoteRemoved(Varien_Event_Observer $observer)
+    {
+        // if the plug-in is not enabled, skip this
+        if (!$this->enabled() || !$this->isValidStore()) return;
+
+        /**
+         *  Do we have a valid quote? We have to check if have a valid object 
+         *  and if that instance has a non zero Id.
+         */
+        $quote = $quote = $observer->getEvent()->getQuote();
+        if (is_object($quote) && $quote->getId())
+        {
+            // add the quote to synchronize queue
+            $this->synchronize($quote, 'remove');
+        }
+    }
+
+    /**
      *  This method is fired when an item is removed
      *  from a quote.
      *
@@ -137,13 +179,6 @@ class Copernica_Integration_Model_Observer
         // Do we have a valid item?
         if ($item = $observer->getEvent()->getItem())
         {
-            /**
-             *  If this quote item has a parent, an update event will be
-             *  triggered for this parent item and we need not synchronize
-             *  this quote item now to avoid unnecessary communication
-             */
-            if ($item->getParentItemId()) return;
-
             // if there is no valid customer we do not care about the quote
             if (!$item->getQuote()->getCustomerId()) return;
 
@@ -283,6 +318,44 @@ class Copernica_Integration_Model_Observer
             // add this customer to the synchronize queue
             $this->synchronize($customer);
         }
+    }
+
+    /**
+     *  This method is triggered when customer group is created or modified.
+     *
+     *  @listen 'customer_group_after_save'
+     *  @param  Varien_Event_Observer
+     */
+    public function groupModified(Varien_Event_Observer $observer)
+    {
+        // if the plug-in is not enabled, skip this
+        if (!$this->enabled()) return;
+
+        // do we have proper group instance?
+        if ($group = $observer->getObject())
+        {
+            // sync this group
+            $this->synchronize($group);
+        }
+    }
+
+    /**
+     *  This method is triggered when customer group is removed. 
+     *
+     *  @listen 'customer_group_delete_before'
+     *  @param  Varien_Event_Observer
+     */
+    public function groupRemoved(Varien_Event_Observer $observer)
+    {
+        // if the plug-in is not enabled, skip this
+        if (!$this->enabled()) return;
+
+        // do we have proper group instance?
+        if ($group = $observer->getObject())
+        {
+            // sync this group
+            $this->synchronize($group, 'remove');
+        }   
     }
 
     /**

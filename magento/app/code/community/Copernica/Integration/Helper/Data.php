@@ -54,8 +54,11 @@ class Copernica_Integration_Helper_Data extends Mage_Core_Helper_Abstract
             ->addFieldToFilter('action', 'start_sync')
             ->getSize();
 
-        // Reset the count
-        return ($count > 0);
+        /**
+         *  Synchronization is scheduled in two situations: when we have a task 
+         *  'start_sync' or we are running that task (the config is set).
+         */
+        return ($count > 0) || Mage::helper('integration/config')->hasSyncState();
     }
 
     /**

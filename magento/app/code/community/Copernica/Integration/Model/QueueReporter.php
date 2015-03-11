@@ -96,7 +96,7 @@ class Copernica_Integration_Model_QueueReporter
         /**
          *  If file does not exists 
          */
-        if (!file_exists(dirname($reportFile))) 
+        if (!file_exists($reportFile)) 
         {
             // create directory
             mkdir(dirname($reportFile), 0777, true);

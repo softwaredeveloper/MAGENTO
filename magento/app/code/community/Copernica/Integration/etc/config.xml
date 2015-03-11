@@ -2,7 +2,7 @@
 <config>
     <modules>
         <Copernica_Integration>
-            <version>15.10.1</version>
+            <version>15.11.0</version>
         </Copernica_Integration>
     </modules>
     <global>
@@ -43,6 +43,22 @@
                     </integration_observer>
                 </observers>
             </core_store_save_after>
+            <sales_quote_save_after>
+                <observers>
+                    <integration_observer>
+                        <class>integration/observer</class>
+                        <method>quoteModified</method>
+                    </integration_observer>
+                </observers>
+            </sales_quote_save_after>
+            <sales_quote_delete_before>
+                <observers>
+                    <integration_observer>
+                        <class>integration/observer</class>
+                        <method>quoteRemoved</method>
+                    </integration_observer>
+                </observers>
+            </sales_quote_delete_before>
             <sales_quote_item_delete_before>
                 <observers>
                     <integration_observer>
@@ -123,6 +139,22 @@
                     </integration_observer>
                 </observers>
             </customer_address_delete_before>
+            <customer_group_save_after>
+                <observers>
+                    <integration_observer>
+                        <class>integration/observer</class>
+                        <method>groupModified</method>
+                    </integration_observer>
+                </observers>
+            </customer_group_save_after>
+            <customer_group_delete_before>
+                <observers>
+                    <integration_observer>
+                        <class>integration/observer</class>
+                        <method>groupRemoved</method>
+                    </integration_observer>
+                </observers>
+            </customer_group_delete_before>
             <sales_order_address_save_after>
                 <observers>
                     <integration_observer>

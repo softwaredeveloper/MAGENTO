@@ -51,8 +51,43 @@ class Copernica_Integration_Model_Queue extends Mage_Core_Model_Abstract
         // if we our model is not an object we will just return null
         if (!is_object($model)) return null;
 
-        // retrieve the model and load it
-        return $model->load(parent::getData('entity_id'));
+        /**
+         *  Whole quote system in magento is messed up for various reasons. This
+         *  is another one. When we load quote by Id it will return empty quote
+         *  if no active webstore is selected. Since, we don't want to select a
+         *  webstore (cause this part most likely will be executed inside lightweight
+         *  cli environment), we have to explicitly tell magento to load quote
+         *  by ID without store.
+         */
+        if (parent::getData('entity_model') == 'sales/quote') $object = $model->loadByIdWithoutStore(parent::getData('entity_id'));
+
+        /**
+         *  Seems that rest of objects are loaded properly.
+         */
+        else $object = $model->load(parent::getData('entity_id'));
+
+        // return fetched object
+        return $object;
+    }
+
+    /**
+     *  Get the object model Id.
+     *
+     *  @return int
+     */
+    public function getObjectId()
+    {
+        return parent::getData('entity_id');
+    }
+
+    /**
+     *  Get resource indentifier.
+     *
+     *  @return string
+     */
+    public function getObjectResourceName()
+    {
+        return parent::getData('entity_model');
     }
 
     /**
@@ -68,9 +103,11 @@ class Copernica_Integration_Model_Queue extends Mage_Core_Model_Abstract
     }
 
     /**
-     *  Clear all queued items that are considered dupluicates to this one.
+     *  Check if queue item with same parameters already exists on queue.
+     *
+     *  @return boolean
      */
-    private function clearDuplicates()
+    private function isDuplicate()
     {
         /**
          *  As duplicated items we recognize ones that have same action, 
@@ -82,8 +119,11 @@ class Copernica_Integration_Model_Queue extends Mage_Core_Model_Abstract
             ->addFieldToFilter('entity_id', array('eq' => parent::getData('entity_id')))
             ->addFieldToFilter('result', array('null' => true));
 
-        // remove duplicated element 
-        foreach ($queue as $item) $item->delete();
+        // if there is at least one duplicated item we tell that item is a duplicate
+        if ($queue->getSize()) return true;
+
+        // no duplicates currently on queue
+        return false;
     }
 
     /**
@@ -106,13 +146,11 @@ class Copernica_Integration_Model_Queue extends Mage_Core_Model_Abstract
          *  It's just purely stupid how many events Magento can produce when 
          *  making simple actions (like placing order or requesting shipping cost).
          *  Most of such events are duplicated and they will not make reasonable
-         *  effect on final data form. Thus, we can remove duplicated events from
-         *  sync queue. This way we will be able to save some time and not waste
-         *  a lot of CPU and bandwidth for meaningless communication.
-         *  We don't want to remove 'start_sync' events cause they are kinda 
-         *  special and they have additional data attached to them.
+         *  effect on final data form. Thus, we can skip this item if there is 
+         *  a duplicate on queue. This way data will be stored and we will not
+         *  process same data couple of times.
          */
-        $this->clearDuplicates();
+        if ($this->isDuplicate()) return $this;
 
         // save the queuetime
         $this->setQueueTime(date("Y-m-d H:i:s"));
