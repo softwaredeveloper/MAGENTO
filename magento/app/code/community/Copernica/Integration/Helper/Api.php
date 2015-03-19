@@ -336,6 +336,7 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
 
         // store the quote
         $this->request->put("magento/order/{$order->getId()}", array(
+            'increment'             =>  $order->getIncrementId(),
             'quote'                 =>  $order->getQuoteId(),
             'customer'              =>  $order->getCustomerId(),
             'webstore'              =>  $order->getStoreId(),
@@ -347,8 +348,7 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
             'quantity'              =>  $order->getTotalQtyOrdered(),
             'currency'              =>  $order->getOrderCurrencyCode(),
             'shipping_cost'         =>  $order->getShippingAmount(),
-            'grandTotal'            =>  $order->getGrandTotal(),
-            'shippingAmount'        =>  $order->shippingAmount(),
+            'grand_total'           =>  $order->getGrandTotal(),
             'subtotal'              =>  $order->getSubtotal(),
             'tax'                   =>  $order->getTaxAmount(),
             'ip_address'            =>  $order->getRemoteIp(),
