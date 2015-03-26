@@ -1,3 +1,8 @@
+15.13.1
+~~~
+Order totals are synchronized from magento. This way all custom changes are acknowledged by copernica.
+Order increment id is synchronized with copernica.
+
 15.06
 ~~~
 Added category synchronization.
