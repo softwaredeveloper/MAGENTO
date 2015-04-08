@@ -68,7 +68,7 @@ class Copernica_Integration_Model_SyncProcessor
      *  How many models we should process in one fetch?
      *  @var    int
      */
-    private $batch = 100;
+    private $batch = 250;
 
     /**
      *  Cached Api helper
