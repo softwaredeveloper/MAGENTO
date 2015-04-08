@@ -266,21 +266,4 @@ class Copernica_Integration_Model_QueueProcessor
             $this->reporter->storeFailure($exception->getMessage(), array( 'resource' => $item->getObjectResourceName(), 'action' => $item->getAction() ));
         }
     }
-
-    /**
-     *  Transfer queue item to error queue.
-     *  @param  Copernica_Integration_Queue
-     *  @todo   do we really need this?
-     */
-    private function transferItemToErrorQueue($item)
-    {
-        // create error queue item
-        $errorItem = Copernica_Integration_ErrorQueue::createFromQueueItem($item);
-
-        // save error item
-        $errorItem->save();
-
-        // remove item
-        $item->delete();
-    }
 }
