@@ -621,6 +621,7 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
             'groupId'       => $group->getId(),
             'groupName'     => $group->getName(),
             'rootCategory'  => $store->getRootCategoryId(),
+            'url'           => $store->getBaseUrl(Mage_Core_Model_Store::URL_TYPE_LINK),
         ));
     }
 
