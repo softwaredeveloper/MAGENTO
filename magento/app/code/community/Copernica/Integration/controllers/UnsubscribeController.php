@@ -63,7 +63,17 @@ class Copernica_Integration_UnsubscribeController extends Mage_Core_Controller_F
         // we could received NULL data
         if (is_null($data)) return;
 
-        // set subscriber status
-        $subscriber->setStatus($data->status);
+        /**
+         *  From Copernica we are getting string values as subscriptions status.
+         *  In Magento we use class const/int value as subscription status. We
+         *  have to translate such values.
+         */
+        switch($data['status']) 
+        {
+            case 'subscribed':      $subscriber->setStatus(Mage_Newsletter_Model_Subscriber::STATUS_SUBSCRIBED)->save(); break;
+            case 'not active':      $subscriber->setStatus(Mage_Newsletter_Model_Subscriber::STATUS_NOT_ACTIVE)->save(); break;
+            case 'unsubscribed':    $subscriber->setStatus(Mage_Newsletter_Model_Subscriber::STATUS_UNSUBSCRIBED)->save(); break;
+            case 'unconfirmed':     $subscriber->setStatus(Mage_Newsletter_Model_Subscriber::STATUS_UNCONFIRMED)->save(); break;
+        }
     }   
 }
