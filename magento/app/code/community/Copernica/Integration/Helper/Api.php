@@ -211,7 +211,17 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
          *
          *  Thus, we will use proper helper to get image url.
          */
-        $imageHelper = Mage::helper('catalog/image')->init($product, 'image');
+        try
+        {
+            $imageUrl = strval(Mage::helper('catalog/image')->init($product, 'image'));
+        }
+
+        // handle the exception
+        catch (\Exception $e)
+        {
+            $imageUrl = null;
+        }
+        
 
         // store the product
         $this->request->put("magento/product/{$product->getId()}", array(
@@ -223,7 +233,7 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
             'weight'        =>  $product->getWeight(),
             'modified'      =>  $product->getUpdatedAt(),
             'uri'           =>  $product->getProductUrl(),
-            'image'         =>  strval($imageHelper),
+            'image'         =>  $imageUrl,
             'categories'    =>  $product->getCategoryIds(),
             'type'          =>  $product->getTypeId(),
         ));

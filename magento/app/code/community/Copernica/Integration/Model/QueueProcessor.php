@@ -213,11 +213,7 @@ class Copernica_Integration_Model_QueueProcessor
     private function handleSync()
     {
         // create sync processor that will process more items at once
-        $syncProcessor = Mage::getModel('integration/SyncProcessor');
-        $syncProcessor->process();
-
-        // if sync processor was not complete we should respaws task on queue
-        if (!$syncProcessor->isComplete()) Mage::getModel('integration/queue')->setAction('start_sync')->save();
+        Mage::getModel('integration/SyncProcessor')->process();
     }
 
     /**
