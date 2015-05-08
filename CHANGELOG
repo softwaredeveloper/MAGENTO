@@ -1,3 +1,9 @@
+15.19
+~~~
+Unsubscribe feature is supported properly.
+Stores base urls are also send to Copernica.
+
+
 15.13.1
 ~~~
 Order totals are synchronized from magento. This way all custom changes are acknowledged by copernica.
