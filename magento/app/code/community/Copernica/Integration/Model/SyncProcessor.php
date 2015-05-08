@@ -68,7 +68,7 @@ class Copernica_Integration_Model_SyncProcessor
      *  How many models we should process in one fetch?
      *  @var    int
      */
-    private $batch = 100;
+    private $batch = 250;
 
     /**
      *  Cached Api helper
@@ -186,6 +186,27 @@ class Copernica_Integration_Model_SyncProcessor
     }
 
     /**
+     *  We are processing collections in manageable chunks. This method will 
+     *  process current chunk and prepare next one if needed.
+     * 
+     *  @return numeric     Number of items processed
+     */
+    private function processNextChunk()
+    {
+        // get current collection
+        $collection = $this->currentCollection();
+
+        // tell api to sync collection
+        $this->api->storeCollection($collection);
+
+        // should we switch collection?
+        if ($this->switchCollection) $this->nextCollection();
+
+        // return collection cound as number of items processed
+        return $collection->count();
+    }
+
+    /**
      *  Process current synchronization step.
      */
     public function process()
@@ -197,30 +218,14 @@ class Copernica_Integration_Model_SyncProcessor
         $counter = 0;
 
         // when we are syncing small collections we should continue syncing
-        while ($counter < $this->batch)
+        while ($counter < $this->batch) 
         {
-            // get current collection to sync
-            $collection = $this->currentCollection();
-
-            // tell api to sync collection
-            $this->api->storeCollection($collection);
-
-            // add to counter amount of items in collection
-            $counter += $collection->count();
-
-            // should we switch collection?
-            if ($this->switchCollection) $this->nextCollection();
-
-            // are we complete?
-            if ($this->isComplete()) 
-            {
-                // reset state
-                $this->resetState();
-
-                // we are really done here
-                return;
-            }
+            if ($this->isComplete()) return $this->resetState();
+            $counter += $this->processNextChunk(); 
         }
+        
+        // are we done with sync?
+        if ($this->isComplete()) return $this->resetState();
 
         /**
          *  We want to store the actual progress of sync. Thus we have to store 
@@ -231,13 +236,16 @@ class Copernica_Integration_Model_SyncProcessor
         
         // we are done so we can store current state
         $this->storeState();
+
+        // respawn start_sync event
+        Mage::getModel('integration/queue')->setAction('start_sync')->save();
     }
 
     /** 
      *  Did SyncProcessor process all available data?
      *  @return bool
      */
-    public function isComplete()
+    private function isComplete()
     {
         return is_null($this->currentModel);
     }
@@ -254,9 +262,6 @@ class Copernica_Integration_Model_SyncProcessor
     {
         // get quote collection
         $quoteCollection = Mage::getModel('sales/quote')->getCollection();
-
-        // we will fetch one quote
-        // $quoteCollection->setPageSize(2);
 
         // we want a quote with id larger than last one
         $quoteCollection->addFieldToFilter('entity_id', array (

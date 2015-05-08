@@ -202,6 +202,27 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
         // we will need store instance to get the currency code
         $store = Mage::getModel('core/store')->load($product->getStoreId());
 
+        /** 
+         *  Previously we used Mage_Catalog_Model_Product::getImageUrl() to fetch
+         *  product image url. It's wrong for 2 reasons: url is not to original
+         *  image but to modified image and that image is stored inside cache.
+         *  When image is stored inside cache it may present problems when flushing
+         *  media cache. Some of the links may lead to non existing files.
+         *
+         *  Thus, we will use proper helper to get image url.
+         */
+        try
+        {
+            $imageUrl = strval(Mage::helper('catalog/image')->init($product, 'image'));
+        }
+
+        // handle the exception
+        catch (\Exception $e)
+        {
+            $imageUrl = null;
+        }
+        
+
         // store the product
         $this->request->put("magento/product/{$product->getId()}", array(
             'sku'           =>  $product->getSku(),
@@ -212,7 +233,7 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
             'weight'        =>  $product->getWeight(),
             'modified'      =>  $product->getUpdatedAt(),
             'uri'           =>  $product->getProductUrl(),
-            'image'         =>  $product->getImageUrl(),
+            'image'         =>  $imageUrl,
             'categories'    =>  $product->getCategoryIds(),
             'type'          =>  $product->getTypeId(),
         ));
@@ -610,6 +631,7 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
             'groupId'       => $group->getId(),
             'groupName'     => $group->getName(),
             'rootCategory'  => $store->getRootCategoryId(),
+            'url'           => $store->getBaseUrl(Mage_Core_Model_Store::URL_TYPE_LINK),
         ));
     }
 

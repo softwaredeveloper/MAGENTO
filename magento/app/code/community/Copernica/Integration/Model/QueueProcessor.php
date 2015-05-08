@@ -213,11 +213,7 @@ class Copernica_Integration_Model_QueueProcessor
     private function handleSync()
     {
         // create sync processor that will process more items at once
-        $syncProcessor = Mage::getModel('integration/SyncProcessor');
-        $syncProcessor->process();
-
-        // if sync processor was not complete we should respaws task on queue
-        if (!$syncProcessor->isComplete()) Mage::getModel('integration/queue')->setAction('start_sync')->save();
+        Mage::getModel('integration/SyncProcessor')->process();
     }
 
     /**
@@ -265,22 +261,5 @@ class Copernica_Integration_Model_QueueProcessor
             // store error
             $this->reporter->storeFailure($exception->getMessage(), array( 'resource' => $item->getObjectResourceName(), 'action' => $item->getAction() ));
         }
-    }
-
-    /**
-     *  Transfer queue item to error queue.
-     *  @param  Copernica_Integration_Queue
-     *  @todo   do we really need this?
-     */
-    private function transferItemToErrorQueue($item)
-    {
-        // create error queue item
-        $errorItem = Copernica_Integration_ErrorQueue::createFromQueueItem($item);
-
-        // save error item
-        $errorItem->save();
-
-        // remove item
-        $item->delete();
     }
 }
