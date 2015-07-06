@@ -26,8 +26,8 @@ following ones:
 * On GitHub
 
     This plugin can also be found on GitHub. If you download the plugin
-    from Magento and not from Github, you get the bleeding edge, latest 
-    version of the plugin.
+    from gitHub and not from Magento Connect platform, you get 
+    the bleeding edge, latest version of the plugin.
 
         https://github.com/CopernicaMarketingSoftware/MAGENTO
 
