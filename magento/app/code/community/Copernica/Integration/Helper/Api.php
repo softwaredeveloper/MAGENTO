@@ -190,6 +190,12 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
                 // we are done here
                 break;
         }
+        
+        /**
+         *  When dealing with whole collections it's better to finalize current 
+         *  set of API requests. This way we can safely continue to next requests.
+         */
+        $this->request->commit();
     }
 
     /**
