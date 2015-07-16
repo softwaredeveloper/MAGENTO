@@ -113,13 +113,15 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
 
         // store collection according to resource name
         switch ($resourceName) {
-            case 'sales/quote': foreach ($collection as $quote) $this->storeQuote($quote); break;
-            case 'sales/quote_item': foreach ($collection as $item) $this->storeQuoteItem($item); break;
-            case 'sales/order': foreach ($collection as $order) $this->storeOrder($order); break;
-            case 'sales/order_item': foreach ($collection as $item) $this->storeOrderItem($item); break;
-            case 'newsletter/subscriber': foreach ($collection as $subscriber) $this->storeSubscriber($subscriber); break;
-            case 'core/store': foreach ($collection as $store) $this->storeStore($store); break;
-            case 'customer/group': foreach($collection as $group) $this->storeGroup($group); break;
+            case 'sales/quote':             foreach ($collection as $quote) $this->storeQuote($quote); break;
+            case 'sales/quote_item':        foreach ($collection as $item) $this->storeQuoteItem($item); break;
+            case 'sales/order':             foreach ($collection as $order) $this->storeOrder($order); break;
+            case 'sales/order_item':        foreach ($collection as $item) $this->storeOrderItem($item); break;
+            case 'newsletter/subscriber':   foreach ($collection as $subscriber) $this->storeSubscriber($subscriber); break;
+            case 'core/store':              foreach ($collection as $store) $this->storeStore($store); break;
+            case 'customer/group':          foreach ($collection as $group) $this->storeGroup($group); break;
+            case 'wishlist/wishlist':       foreach ($collection as $wishlist) $this->storeWishlist($wishlist); break;
+            case 'wishlist/item':           foreach ($collection as $item) $this->storeWishlistItem($item); break;
 
             /** 
              *  Category collection does not load all needed category data. Thus 
@@ -676,5 +678,73 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
     public function removeGroup($id)
     {
         $this->request->delete("magento/group/{$id}");
+    }
+    
+    /**
+     *  Store wishlist
+     *  @param  Mage_Wishlist_Model_Wishlist
+     */
+    public function storeWishlist(Mage_Wishlist_Model_Wishlist $wishlist)
+    {
+        Mage::log(json_encode(array(
+            'customerId'    => $wishlist->getCustomerId(),
+            'shared'        => (bool)$wishlist->getShared(),
+            'sharingCode'   => $wishlist->getSharingCode(),
+            'updatedAt'     => $wishlist->getUpdatedAt(),
+            'webstoreId'    => $wishlist->getStoreId(),
+        )), null, 'copernica.log');
+        
+        
+        $this->request->put("magento/wishlist/{$wishlist->getId()}", array(
+            'customerId'    => $wishlist->getCustomerId(),
+            'shared'        => (bool)$wishlist->getShared(),
+            'sharingCode'   => $wishlist->getSharingCode(),
+            'updatedAt'     => $wishlist->getUpdatedAt(),
+            'webstoreId'    => $wishlist->getStoreId(),
+        ));
+    }
+
+    /**
+     *  Store wishlist item
+     *  @param Mage_Wishlist_Model_Item
+     */
+    public function storeWishlistItem(Mage_Wishlist_Model_Item $item)
+    {
+        Mage::log(json_encode(array(
+            'wishlistId'    => $item->getWishlistId(),
+            'productId'     => $item->getProductId(),
+            'addedAt'       => $item->getAddedAt(),
+            'webstoreId'    => $item->getStoreId(),
+            'description'   => $item->getDescription(),
+            'quantity'      => $item->getQty(),
+        )), null, 'copernica.log');
+        
+        
+        $this->request->put("magento/wishlistitem/{$item->getId()}", array (
+            'wishlistId'    => $item->getWishlistId(),
+            'productId'     => $item->getProductId(),
+            'addedAt'       => $item->getAddedAt(),
+            'webstoreId'    => $item->getStoreId(),
+            'description'   => $item->getDescription(),
+            'quantity'      => $item->getQty(),
+        ));
+    }
+    
+    /**
+     *  Remove magento wishlist in copernica
+     *  @param  int
+     */
+    public function removeWishlist($id)
+    {
+        $this->request->delete("magento/wishlist/{$id}");
+    }
+    
+    /**
+     *  Remove magento wishlist item in copernica
+     *  @param  int
+     */
+    public function removeWishlistItem($id)
+    {
+        $this->request->delete("magento/wishlistitem/{$id}");
     }
 }

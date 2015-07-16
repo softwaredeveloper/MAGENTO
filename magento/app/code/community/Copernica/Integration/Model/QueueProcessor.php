@@ -179,6 +179,8 @@ class Copernica_Integration_Model_QueueProcessor
             case 'core/store':              $this->api->storeStore($model);         break;
             case 'catalog/category':        $this->api->storeCategory($model);      break;
             case 'customer/group':          $this->api->storeGroup($model);         break;
+            case 'wishlist/wishlist':       $this->api->storeWishlist($model);      break;
+            case 'wishlist/item':           $this->api->storeWishlistItem($model);  break;
         }
     }
 
@@ -203,6 +205,8 @@ class Copernica_Integration_Model_QueueProcessor
             case 'customer/address':        $this->api->removeAddress($entityId, 'customer');   break;
             case 'sales/order_address':     $this->api->removeAddress($entityId, 'order');      break;
             case 'sales/quote_address':     $this->api->removeAddress($entityId, 'quote');      break;
+            case 'wishlist/wishlist':       $this->api->removeWishlist($entityId);              break;
+            case 'wishlist/item':           $this->api->removeWishlistItem($entityId);          break;
         }
     }
 
