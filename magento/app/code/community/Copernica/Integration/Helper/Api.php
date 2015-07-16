@@ -686,15 +686,6 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
      */
     public function storeWishlist(Mage_Wishlist_Model_Wishlist $wishlist)
     {
-        Mage::log(json_encode(array(
-            'customerId'    => $wishlist->getCustomerId(),
-            'shared'        => (bool)$wishlist->getShared(),
-            'sharingCode'   => $wishlist->getSharingCode(),
-            'updatedAt'     => $wishlist->getUpdatedAt(),
-            'webstoreId'    => $wishlist->getStoreId(),
-        )), null, 'copernica.log');
-        
-        
         $this->request->put("magento/wishlist/{$wishlist->getId()}", array(
             'customerId'    => $wishlist->getCustomerId(),
             'shared'        => (bool)$wishlist->getShared(),
@@ -710,16 +701,6 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
      */
     public function storeWishlistItem(Mage_Wishlist_Model_Item $item)
     {
-        Mage::log(json_encode(array(
-            'wishlistId'    => $item->getWishlistId(),
-            'productId'     => $item->getProductId(),
-            'addedAt'       => $item->getAddedAt(),
-            'webstoreId'    => $item->getStoreId(),
-            'description'   => $item->getDescription(),
-            'quantity'      => $item->getQty(),
-        )), null, 'copernica.log');
-        
-        
         $this->request->put("magento/wishlistitem/{$item->getId()}", array (
             'wishlistId'    => $item->getWishlistId(),
             'productId'     => $item->getProductId(),
