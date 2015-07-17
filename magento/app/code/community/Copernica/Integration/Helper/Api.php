@@ -557,18 +557,28 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
                 'type'              => 'order',
                 'billingAddress'    => $order->getData('billing_address_id') == $address->getId(),
                 'deliveryAddress'   => $order->getData('shipping_address_id') == $address->getId(),
+                'order'             => $order->getId(),
                 'customer'          => $order->getData('customer_id'),
             );  
         } 
         else if ($address instanceof Mage_Sales_Model_Quote_Address)
         {
             /**
-             *  It's really broken. Quote address will not know its own quote,
-             *  unless we assign a quote that we fetched from Mage instance 
-             *  with use of ID that we got from address instance.
+             *  This part is really retarded. When data is fetched by magento, 
+             *  from database into Mage_Sales_Model_Quote_Address instance.
+             *  'quote_id' is not set despite that it's has a value in mysql 
+             *  table.
+             *
+             *  Thus, to fix it we have to make very specific sql query.
              */
-            $address->setQuote(Mage::getModel('sales/quote')->load($address->getQuoteId()));
-            $quote = $address->getQuote();
+            $resource = Mage::getSingleton('core/resource');
+            $connRead = $resource->getConnection('core_read');
+            
+            // get quote Id
+            $quoteId = $connRead->fetchOne("SELECT quote_id FROM {$resource->getTableName('sales/quote_address')} WHERE `address_id` = :address", array('address' => $address->getId()));
+
+            // load quote instance
+            $quote = Mage::getModel('sales/quote')->load($quoteId);
 
             // check if store is disabled for sync
             if (!Mage::getStoreConfig('copernica_options/apisync/enabled', $quote->getStoreId())) return;
@@ -578,7 +588,8 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
                 'type'              => 'quote',
                 'billingAddress'    => $address->getData('address_type') == 'billing',
                 'deliveryAddress'   => $address->getData('address_type') == 'shipping',
-                'customer'          => $address->getData('customer_id')
+                'customer'          => $address->getData('customer_id'),
+                'quote'             => $quoteId,
             );  
         } 
 
