@@ -525,4 +525,106 @@ class Copernica_Integration_Model_Observer
             $this->synchronize($category, 'remove');
         }
     }
+    
+    /**
+     *  This event is triggered when a wishlist is modified  
+     *
+     *  @listen 'wishlist_save_commit_after'
+     *  @param  Varien_Event_Observer
+     */
+    public function wishlistModified(Varien_Event_Observer $observer)
+    {
+        /**
+         *  We don't sync this action only on one occassion: when the whole
+         *  integration is disabled. We do ignore wishlist enable/disable states
+         *  cause categories are pretty much global entities that don't care 
+         *  about stores.
+         */
+        if(!$this->enabled()) return;
+        
+        // get the wishlist instnace
+        $wishlist = $observer->getEvent()->getObject();
+        
+        // do we have a valid wishlist?
+        if (is_object($wishlist) && $wishlist->getId())
+        {
+            $this->synchronize($wishlist);
+        }
+    }
+    
+    /**
+     *  This is triggered when a category is removed.
+     *
+     *  @listen 'wishlist_delete_before'
+     *  @param  Varien_Event_Observer
+     */ 
+    public function wishlistRemoved(Varien_Event_Observer $observer)
+    {
+        /**
+         *  We don't sync this action only on one occassion: when the whole
+         *  integration is disabled. We do ignore wishlists enable/disable states
+         *  cause categories are pretty much global entities that don't care 
+         *  about stores.
+         */
+        if (!$this->enabled()) return;
+
+        // get wishlist instance
+        $wishlist = $observer->getEvent()->getObject();
+
+        // do we have a valid wishlist
+        if (is_object($wishlist) && $wishlist->getId())
+        {
+            // add this wishlist to synchronize queue
+            $this->synchronize($wishlist, 'remove');
+        }
+    }
+    
+    /**
+     *  This event is triggered when a wishlist item is modified  
+     *
+     *  @listen 'wishlist_item_save_commit_after'
+     *  @param  Varien_Event_Observer
+     */
+    public function wishlistItemModified(Varien_Event_Observer $observer)
+    {
+        /**
+         *  If integration or current store is disabled we don't want to sync 
+         *  wishlists at all.
+         */
+        if(!$this->enabled() || !$this->isValidStore()) return;
+        
+        // get the item instnace
+        $item = $observer->getEvent()->getItem();
+        
+        // do we have a valid item?
+        if (is_object($item) && $item->getId())
+        {
+            $this->synchronize($item);
+        }
+    }
+    
+    /**
+     *  This is triggered when a category is removed.
+     *
+     *  @listen 'wishlist_item_delete_before'
+     *  @param  Varien_Event_Observer
+     */ 
+    public function wishlistItemRemoved(Varien_Event_Observer $observer)
+    {
+        /**
+         *  Since it's a removal then we should synchronize it regardless of 
+         *  store settings.
+         */
+        if (!$this->enabled()) return;
+
+        // get item instance
+        $item = $observer->getEvent()->getItem();
+
+        // do we have a valid item 
+        if (is_object($item) && $item->getId())
+        {
+            // add this item to synchronize queue
+            $this->synchronize($item, 'remove');
+        }
+    }
 }

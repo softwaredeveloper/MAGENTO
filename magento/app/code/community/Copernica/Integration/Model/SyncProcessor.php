@@ -50,6 +50,8 @@ class Copernica_Integration_Model_SyncProcessor
         'newsletter/subscriber',
         'customer/address',
         'customer/group',
+        'wishlist/wishlist',
+        'wishlist/item',
     );
 
     /** 
@@ -339,6 +341,8 @@ class Copernica_Integration_Model_SyncProcessor
             case 'Mage_Newsletter_Model_Resource_Subscriber_Collection': return 'subscriber_id';
             case 'Mage_Sales_Model_Resource_Quote_Address_Collection': return 'address_id';
             case 'Mage_Customer_Model_Resource_Group_Collection': return 'customer_group_id';
+            case 'Mage_Wishlist_Model_Resource_Wishlist_Collection': return 'wishlist_id';
+            case 'Mage_Wishlist_Model_Resource_Item_Collection': return 'wishlist_item_id';
             default: return 'entity_id';
         }
     }

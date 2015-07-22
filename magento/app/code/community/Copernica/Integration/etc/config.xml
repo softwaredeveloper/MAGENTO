@@ -2,7 +2,7 @@
 <config>
     <modules>
         <Copernica_Integration>
-            <version>15.28.1</version>
+            <version>15.30</version>
         </Copernica_Integration>
     </modules>
     <global>
@@ -227,6 +227,38 @@
                     </integration_observer>
                 </observers>
             </catalog_category_delete_before>
+            <wishlist_save_commit_after>
+                <observers>
+                    <integration_observer>
+                        <class>integration/observer</class>
+                        <method>wishlistModified</method>
+                    </integration_observer>
+                </observers>
+            </wishlist_save_commit_after>
+            <wishlist_item_save_commit_after>
+                <observers>
+                    <integration_observer>
+                        <class>integration/observer</class>
+                        <method>wishlistItemModified</method>
+                    </integration_observer>
+                </observers>
+            </wishlist_item_save_commit_after>
+            <wishlist_delete_before>
+                <observers>
+                    <integration_observer>
+                        <class>integration/observer</class>
+                        <method>wishlistRemoved</method>
+                    </integration_observer>
+                </observers>
+            </wishlist_delete_before>
+            <wishlist_item_delete_before>
+                <observers>
+                    <integration_observer>
+                        <class>integration/observer</class>
+                        <method>wishlistItemRemoved</method>
+                    </integration_observer>
+                </observers>
+            </wishlist_item_delete_before>
         </events>
         <resources>
             <integration_setup>
