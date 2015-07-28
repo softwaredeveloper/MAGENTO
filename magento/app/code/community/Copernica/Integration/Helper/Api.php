@@ -192,6 +192,12 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
                 // we are done here
                 break;
         }
+        
+        /**
+         *  When dealing with whole collections it's better to finalize current 
+         *  set of API requests. This way we can safely continue to next requests.
+         */
+        $this->request->commit();
     }
 
     /**
@@ -712,13 +718,27 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
      */
     public function storeWishlistItem(Mage_Wishlist_Model_Item $item)
     {
-        $this->request->put("magento/wishlistitem/{$item->getId()}", array (
+        $this->request->put("magento/wishlistitem/{$item->getId()}", array(
             'wishlistId'    => $item->getWishlistId(),
             'productId'     => $item->getProductId(),
             'addedAt'       => $item->getAddedAt(),
             'webstoreId'    => $item->getStoreId(),
             'description'   => $item->getDescription(),
             'quantity'      => $item->getQty(),
+        ));
+    }
+    
+    /**
+     *  Store product view.
+     *  @param  Copernica_Integration_Model_ViewedProduct
+     */
+    public function storeProductView(Copernica_Integration_Model_ProductView $view)
+    {
+        $this->request->post("magento/productview", array(
+            "customer_id"   => $view->getCustomerId(),
+            "product_id"    => $view->getProductId(),
+            "webstore_id"   => $view->getStoreId(),
+            "viewed_at"     => $view->getViewedAt(),
         ));
     }
     

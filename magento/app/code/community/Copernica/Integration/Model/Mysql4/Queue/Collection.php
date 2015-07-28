@@ -47,8 +47,7 @@ class Copernica_Integration_Model_Mysql4_Queue_Collection extends Mage_Core_Mode
         // If a result was processed before, we should process it if we have nothing
         // else to process, we want to import the queue items without an result_time
         // first and then in order of queue time.
-        return $this->addOrder('result_time', self::SORT_ORDER_ASC)
-                ->addOrder('queue_time', self::SORT_ORDER_ASC);
+        return $this->addOrder('result_time', self::SORT_ORDER_ASC)->addOrder('queue_time', self::SORT_ORDER_ASC);
     }
 
     /**

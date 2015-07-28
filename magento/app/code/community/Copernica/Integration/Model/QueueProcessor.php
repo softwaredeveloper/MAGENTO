@@ -181,6 +181,7 @@ class Copernica_Integration_Model_QueueProcessor
             case 'customer/group':          $this->api->storeGroup($model);         break;
             case 'wishlist/wishlist':       $this->api->storeWishlist($model);      break;
             case 'wishlist/item':           $this->api->storeWishlistItem($model);  break;
+            case 'integration/productView': $this->api->storeProductView($model);   break;
         }
     }
 

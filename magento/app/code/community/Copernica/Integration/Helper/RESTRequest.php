@@ -225,9 +225,10 @@ class Copernica_Integration_Helper_RESTRequest extends Mage_Core_Helper_Abstract
 
         // we want to make POST
         curl_setopt($curl, CURLOPT_POST, true);
-
-        // set custom method
         curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "POST");
+        curl_setopt($curl, CURLOPT_HTTPHEADER, array(
+            'Content-Type: application/json'
+        ));
 
         // set data
         curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));
@@ -249,6 +250,9 @@ class Copernica_Integration_Helper_RESTRequest extends Mage_Core_Helper_Abstract
         // make a PUT request
         curl_setopt($curl, CURLOPT_POST, true);
         curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "PUT");
+        curl_setopt($curl, CURLOPT_HTTPHEADER, array(
+            'Content-Type: application/json'
+        ));
 
         // set data
         curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));

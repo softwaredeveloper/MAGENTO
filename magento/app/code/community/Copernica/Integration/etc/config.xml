@@ -2,7 +2,7 @@
 <config>
     <modules>
         <Copernica_Integration>
-            <version>15.30</version>
+            <version>15.30.1</version>
         </Copernica_Integration>
     </modules>
     <global>
@@ -20,6 +20,9 @@
                     <config>
                         <table>copernica_config</table>
                     </config>
+                    <productView>
+                        <table>copernica_product_view</table>
+                    </productView>
                     <errorqueue>
                         <table>copernica_error_queue</table>
                     </errorqueue>
@@ -259,6 +262,14 @@
                     </integration_observer>
                 </observers>
             </wishlist_item_delete_before>
+            <catalog_controller_product_view>
+                <observers>
+                    <integration_observer>
+                        <class>integration/observer</class>
+                        <method>catalogProductView</method>
+                    </integration_observer>
+                </observers>
+            </catalog_controller_product_view>
         </events>
         <resources>
             <integration_setup>
@@ -338,6 +349,13 @@
                 <!-- by default integration is enabled for every type of website/store. User will have to explicitly say that he does not want to sync specific store --> 
                 <enabled>enable</enabled>
             </apisync>
+            <productview>
+                <!-- by default this option is on -->
+                <enabled>enable</enabled>
+                
+                <!-- 10 minutes is a safe amount of time that has to pass to consider product catalog page view as unique one -->
+                <throttle>10</throttle>
+            </productview>
             <apiconnection>
                 <!-- The default copernica API address. NOTE that it's prefered to make local overrides rather than editing this file. -->
                 <apihost>https://api.copernica.com</apihost>

@@ -447,31 +447,6 @@ class Copernica_Integration_Model_Observer
     }
 
     /**
-     *  This method is triggered when a customer views a product
-     *
-     *  @listen 'catalog_controller_product_view'
-     *  @param  Varien_Event_Observer    observer object
-     */
-    public function productViewed(Varien_Event_Observer $observer)
-    {
-        // if the plug-in is not enabled, skip this
-        if (!$this->enabled() || !$this->isValidStore()) return;
-
-        // Do we have a valid item?
-        if ($item = $observer->getEvent()->getProduct())
-        {
-            // get current customer instance and Id
-            $customer = Mage::getSingleton('customer/session')->getCustomer();
-            $customerId = $customer->getId();
-
-            // this item cannot be linked to a customer, so is not relevant at this moment
-            if (!$customerId) return;
-
-            // TODO: synchronize to copernica
-        }
-    }
-
-    /**
      *  This is triggered when a category is stored.
      *
      *  @listen 'catalog_category_save_commit_after'
@@ -626,5 +601,82 @@ class Copernica_Integration_Model_Observer
             // add this item to synchronize queue
             $this->synchronize($item, 'remove');
         }
+    }
+
+    /**
+     *  This is triggered when user view a product page.
+     *  
+     *  @listen catalog_controller_product_view
+     *  @param  Varien_Event_Observer
+     */
+    public function catalogProductView(Varien_Event_Observer $observer)
+    {
+        /**
+         *  If integration or current store is disabled we don't want to sync 
+         *  wishlists at all.
+         */
+        if(!$this->enabled() || !$this->isValidStore()) return;
+        
+        // get current store Id
+        $currentStoreId = Mage::app()->getStore()->getId();
+
+        /**
+         *  Additionally we should check if product view should be synchronized
+         *  on current store view.
+         */
+        if (!Mage::getStoreConfig('copernica_options/productview/enabled', $currentStoreId)) return;
+
+        //  get event into local scope
+        $event = $observer->getEvent();
+
+        /**
+         *  Get currently logged on user. At this point we can only track 
+         *  viewed products by registered users. Thus when we know that
+         *  product was viewed by non-customer we can bail out from this
+         *  handler.
+         */
+        $customer = Mage::getSingleton('customer/session')->getCustomer();
+        if (!$customer || !$customer->getId()) return;
+
+        // get product instance into local scope
+        $product = $event->getProduct();
+        
+        // try to get last product view by current customer
+        $possibleView = Mage::getModel('integration/productView')
+            ->getCollection()
+            ->addFieldToFilter( 'customer_id', $customer->getId())
+            ->addFieldToFilter( 'product_id', $product->getId())
+            ->addFieldToFilter( 'store_id', $currentStoreId)
+            ->setOrder('id', 'DESC')
+            ->getFirstItem();
+            
+        /**
+         *  Since page views can generate quite a stress on Magento and Copernica
+         *  system we want to throttle them. This option can be set to different
+         *  values depending on intentions. 
+         *  When testing it's better to have no throttle at all so we can have 
+         *  0 value in throttle config variable. But normally we will have
+         *  some positive value.
+         *  If we know that the difference between last page view and now is 
+         *  smaller than setted value, we can break execution here and not register
+         *  page view at all.
+         */
+        $pageViewThrottle = Mage::getStoreConfig('copernica_options/productview/throttle', $currentStoreId);
+        if ($possibleView && floor(abs(strtotime($possibleView->getViewedAt()) - strtotime(date("Y-m-d H:i:s"))) / 60) < $pageViewThrottle ) return;
+        
+        // create a model of this view
+        $newView = Mage::getModel('integration/productView')
+            ->setCustomerId($customer->getId())
+            ->setProductId($product->getId())
+            ->setStoreId($currentStoreId)
+            ->setViewedAt(date("Y-m-d H:i:s"))
+            ->save();
+            
+        /**
+         *  Now when we have a instance of viewed product we can put it on 
+         *  synchronization queue. It should be picked at later time for full 
+         *  synchronization.
+         */
+        $this->synchronize($newView);
     }
 }
