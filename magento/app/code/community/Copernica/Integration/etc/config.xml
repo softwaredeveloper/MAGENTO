@@ -383,6 +383,10 @@
                 <schedule><cron_expr>*/5 * * * *</cron_expr></schedule>
                 <run><model>integration/QueueProcessor::processQueue</model></run>
             </integration_process_queue>
+            <integration_clean_product_views>
+                <schedule><cron_expr>30 2 * * *</cron_expr></schedule>
+                <run><model>integration/ProductViewsCleaner::cleanProductViews</model></run>
+            </integration_clean_product_views>
         </jobs>
     </crontab>
 </config>
