@@ -83,6 +83,7 @@
                         <reportfile translate="label">
                             <label>Report file</label>
                             <comment><![CDATA[Report file is a JSON file with results of last 100 synchronization runs. It will contain data like synchronization time, number of items synchronised or additional informations. <br> This path will be relative to magento root directory.]]></comment>
+                            <backend_model>integration/reportFileConfigData</backend_model>
                             <frontend_type>text</frontend_type>
                             <sort_order>1</sort_order>
                             <show_in_default>1</show_in_default>
