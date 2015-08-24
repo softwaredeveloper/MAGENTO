@@ -121,6 +121,15 @@ class Copernica_Integration_Adminhtml_integration_SettingsController extends Cop
         Mage::getConfig()->saveConfig('copernica_options/apiconnection/apiaccount', $info['name']);
         Mage::getConfig()->saveConfig('copernica_options/apiconnection/apiaccount_id', $info['id']);
         
+        /**
+         *  It would be really intuitive to have some kind of ::flush or ::commit
+         *  or ::apply call (or have the actual config instance flush it's cache),
+         *  but it seems that nothing like that is around there. Thus, every 
+         *  Magento dev has to remember to clear config cache by himself, so 
+         *  changes will be applied/included.
+         */
+        Mage::app()->getCacheInstance()->cleanType('config');
+        
         // return this
         return $this->_redirect('*/*', array('response' => 'new-access-token'));
     }
