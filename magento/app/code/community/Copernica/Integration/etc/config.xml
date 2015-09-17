@@ -2,7 +2,7 @@
 <config>
     <modules>
         <Copernica_Integration>
-            <version>15.30.1</version>
+            <version>15.38.0</version>
         </Copernica_Integration>
     </modules>
     <global>
@@ -15,16 +15,16 @@
                 <class>Copernica_Integration_Model_Mysql4</class>
                 <entities>
                     <queue>
-                        <table>copernica_queue</table>
+                        <table>copernica_integration_queue</table>
                     </queue>
                     <config>
-                        <table>copernica_config</table>
+                        <table>copernica_integration_config</table>
                     </config>
                     <productView>
-                        <table>copernica_product_view</table>
+                        <table>copernica_integration_product_view</table>
                     </productView>
                     <errorqueue>
-                        <table>copernica_error_queue</table>
+                        <table>copernica_integration_error_queue</table>
                     </errorqueue>
                 </entities>
             </integration_mysql4>
@@ -308,7 +308,7 @@
                 <use>standard</use>
                 <args>
                     <module>Copernica_Integration</module>
-                    <frontName>copernica</frontName>
+                    <frontName>copernica_integration</frontName>
                 </args>
             </integration>
         </routers>
