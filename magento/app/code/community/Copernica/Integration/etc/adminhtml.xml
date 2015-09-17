@@ -1,7 +1,7 @@
 <config>
     <menu>
-        <copernica translate="title" module="integration">
-            <title>Copernica</title>
+        <integration translate="title" module="integration">
+            <title>Copernica Integration</title>
             <sort_order>120</sort_order>
             <depends>
                 <module>Copernica_Integration</module>
@@ -16,13 +16,13 @@
                     <action>adminhtml/integration_export</action>
                 </export>
             </children>
-        </copernica>
+        </integration>
     </menu>
     <acl>
         <resources>
             <admin>
                 <children>
-                    <copernica translate="title" module="integration">
+                    <integration translate="title" module="integration">
                         <title>Copernica Magento Integration</title>
                         <sort_order>120</sort_order>
                         <children>
@@ -33,7 +33,7 @@
                                 <title>Synchronize Data</title>
                             </export>
                         </children>
-                    </copernica>
+                    </integration>
                </children>
            </admin>
        </resources>
