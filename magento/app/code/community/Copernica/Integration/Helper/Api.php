@@ -169,7 +169,7 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
 
                     // store address
                     $this->storeAddress($address);  
-                } 
+                }
 
                 // we are done here
                 break;
@@ -229,10 +229,9 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
         {
             $imageUrl = null;
         }
-        
 
-        // store the product
-        $this->request->put("magento/product/{$product->getId()}", array(
+        // prepare data
+        $data = array(
             'sku'           =>  $product->getSku(),
             'name'          =>  $product->getName(),
             'description'   =>  $product->getDescription(),
@@ -244,7 +243,79 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
             'image'         =>  $imageUrl,
             'categories'    =>  $product->getCategoryIds(),
             'type'          =>  $product->getTypeId(),
-        ));
+        );
+
+        /**
+         *  We want to synchronize attributes along the basic product data. We will
+         *  send all attributes as objects inside one array.
+         */
+        $data['attributes'] = array();
+
+        /**
+         *  Beside basic product data we also want to sync attributes information
+         *  for each product.
+         */
+        foreach ($product->getAttributes() as $attribute)
+        {
+            $data['attributes'][] = array(
+                'code'              => $attribute->getAttributeCode(),
+                'frontendLabel'     => $attribute->getFrontendLabel(),
+                'value'             => $attribute->getFrontend()->getValue($product),
+            );
+        }
+
+        // we will store them as simple array
+        $data['options'] = array();
+     
+        // get all product options   
+        foreach ($product->getOptions() as $option)
+        {
+            /**
+             *  Important parts about the options is the option title (customer 
+             *  friendly version), type of the field, ofcourse, the potential 
+             *  values that can be assigned to option.
+             */
+            $optionData = array(
+                'id'            => $option->getId(),
+                'title'         => $option->getTitle(),
+                'type'          => $option->getType(),
+                'required'      => $option->getIsRequire(),
+                'sortOrder'     => $option->getSortOrder(),
+                'maxCharacters' => $option->getMaxCharacters(),
+                'values'        => array(),
+            );
+        
+            /**
+             *  With file type we can have additional data to sync. 
+             */
+            if ($option->getType() == 'file')
+            {
+                $optionData['imageSizeX'] = $option->getImageSizeX();
+                $optionData['imageSizeY'] = $option->getImageSizeY();
+                $optionData['fileExtension'] = $option->getFileExtension();
+            }
+
+            /**
+             *  Iterate over all options values and assign them to values property.
+             */
+            foreach ($option->getValues() as $value)
+            {
+                // get value data
+                $optionData['values'][] = array (
+                    'title'     => $value->getTitle(),
+                    'sku'       => $value->getSku(),
+                    'price'     => $value->getPrice(),
+                    'priceType' => $value->getPriceType(),
+                    'sortOrder' => $value->getSortOrder(),
+                );
+            }
+    
+            // assign options data
+            $data['options'][] = $optionData;
+        }
+
+        // store the product
+        $this->request->put("magento/product/{$product->getId()}", $data);
     }
 
     /**
@@ -330,8 +401,8 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
         // get quote item shipping address
         $quoteItemShippingAddress = $quote->getShippingAddress()->getItemByQuoteItemId($item->getId());
 
-        // store the quote item
-        $this->request->put("magento/quoteitem/{$item->getId()}", array(
+        // start preparing data
+        $data = array(
             'quote'         =>  $item->getQuoteId(),
             'product'       =>  $item->getProductId(),
             'quantity'      =>  $item->getQty(),
@@ -340,7 +411,94 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
             'weight'        =>  $item->getWeight(),
             'address'       =>  is_object($quoteItemShippingAddress) ? $quoteItemShippingAddress->getAddress()->getId() : null,
             'parentItem'    =>  ($parentId = $item->getParentItemId()) ? intval($parentId) : null,
-        ));
+            'options'       =>  array(),
+        );
+
+        /**
+         *  Quote items can have selected number of custom options. Quote item 
+         *  class has method ::getOptions(). It doesn't work in expected way.
+         *  Even when quote item has options set it will return null regardless.
+         *  Thus, to get the actual options we will have to make additioanl 
+         *  processing. First we will have to get options data.
+         */
+        $options = Mage::getResourceModel('sales/quote_item_option_collection');
+        $options->addItemFilter($item->getId());
+        foreach($options as $option) {
+            
+            /**
+             *  Options collection contains options data that is quite odd. It 
+             *  contains options with codes like "info_buyRequest" and "option_ids".
+             *  Such are not really options so we can skip them.
+             */ 
+            if ($option->getCode() == 'info_buyRequest' || $option->getCode() == 'option_ids') continue;
+
+            // for copernica the option id is important and not the 'code' value.
+            $matchResult = preg_match('/option_([0-9]+)/', $option->getCode(), $matches);
+            
+            // if no matches we can proceed further
+            if (!$matchResult) continue;
+
+            /**
+             *  At this point we are nearly done. We have option id and we have 
+             *  the value. But we could encounter serialized data as value. 
+             *  Yes, serialized data. So we should try to unserialize data.
+             */
+            $value = unserialize($option->getValue());
+
+            /**
+             *  In most of the cases data should be a scalar. This will cause 
+             *  unserialization process to fail and return false. In such cases
+             *  we will go back and use original data.
+             */
+            if ($value === false) $value = $option->getValue();
+
+            /**
+             *  With custom option we can end up with file option. We should 
+             *  provide a url to that file. Thus, magento is being really 
+             *  uncooperative in this manner. At this time we are just sending
+             *  all data with the result, but we are missing the actual url that
+             *  can be used to show that file.
+             *  @todo feature missing
+             */
+             
+            $optionId = $matches[1];
+            
+            /**
+             *  It may happen that inside database there is reference to option 
+             *  instance that is no longer existing. Thus we should check if 
+             *  such option is still in database. If so then we will send it to
+             *  Copernica API.
+             */
+            if (!$optionId) continue;
+
+            /**
+             *  Seems that magento doesn't fetch options titles automatically.
+             *  It doest that when options are fetched from collection. And it
+             *  does so magic stuff inside collection. Instead of making it really
+             *  complicated we will just ask the database directly.
+             */
+            $resource = Mage::getSingleton('core/resource');
+            $tableName = $resource->getTableName('catalog_product_option_title');
+            $read = $resource->getConnection('core_read');
+            $sql = "SELECT title FROM {$tableName} WHERE store_id = 0 AND option_id = {$optionId}";
+            $title = $read->fetchOne($sql);
+            
+            /**
+             *  Inside file option magento can store quite an amount of information.
+             *  We don't want to sent it all (as is) to Copernica.
+             */
+            if (Mage::getModel('catalog/product_option')->load($optionId)->getType() == 'file') $value = $value['title'];
+
+            // add another option to the result
+            $data['options'][] = array (
+                'id'    => $optionId,
+                'label' => $title,
+                'value' => $value,
+            );
+        }
+    
+        // store the quote item
+        $this->request->put("magento/quoteitem/{$item->getId()}", $data);
     }
 
     /**
@@ -416,6 +574,7 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
             'currency'      =>  $item->getOrder()->getOrderCurrencyCode(),
             'weight'        =>  $item->getWeight(),
             'parentItem'    =>  ($parentId = $item->getParentItemId()) ? intval($parentId) : null,
+            'quoteItem'     =>  $item->getQuoteItemId(),
         ));
     }
 

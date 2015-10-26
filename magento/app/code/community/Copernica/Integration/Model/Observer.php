@@ -29,7 +29,7 @@
  * Observer object.
  */
 class Copernica_Integration_Model_Observer
-{
+{    
     /**
      *  Check if event is added in store that we want to sync.
      *  @return bool
@@ -179,9 +179,6 @@ class Copernica_Integration_Model_Observer
         // Do we have a valid item?
         if ($item = $observer->getEvent()->getItem())
         {
-            // if there is no valid customer we do not care about the quote
-            if (!$item->getQuote()->getCustomerId()) return;
-
             // add the item to the synchronize queue
             $this->synchronize($item);
         }
@@ -194,7 +191,7 @@ class Copernica_Integration_Model_Observer
      *  @param  Varien_Event_Observer    observer object
      */
     public function orderModified(Varien_Event_Observer $observer)
-    {
+    {        
         // if the plug-in is not enabled, skip this
         if (!$this->enabled() || !$this->isValidStore()) return;
 
