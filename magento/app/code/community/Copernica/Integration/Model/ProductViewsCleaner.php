@@ -43,9 +43,16 @@ class Copernica_Integration_Model_ProductViewsCleaner
         
         // get oproduct view model table name
         $tableName = $resource->getTableName('integration/productView');
+
+        /**
+         *  To optimize sql query we will calculate pivot point before we send the query
+         *  to the server. We want a unix timestamp that is placed 30 days ago (hence the 
+         *  calculation to seconds).
+         */
+        $pivotTimestamp = time() - (30 * 24 * 60 * 60);
         
         // construct a query that will remove all viewed products that are older than 30 days
-        $query = "DELETE FROM {$tableName} WHERE `viewed_at` < UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL 30 DAY))";
+        $query = "DELETE FROM {$tableName} WHERE `viewed_at` < {$pivotTimestamp}";
         
         // execute the query
         $writeConnection->query($query);

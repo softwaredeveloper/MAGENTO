@@ -179,9 +179,6 @@ class Copernica_Integration_Model_Observer
         // Do we have a valid item?
         if ($item = $observer->getEvent()->getItem())
         {
-            // if there is no valid customer we do not care about the quote
-            if (!$item->getQuote()->getCustomerId()) return;
-
             // add the item to the synchronize queue
             $this->synchronize($item);
         }
