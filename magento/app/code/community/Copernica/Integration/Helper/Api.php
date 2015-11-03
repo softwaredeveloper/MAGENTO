@@ -918,4 +918,26 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
     {
         $this->request->delete("magento/wishlistitem/{$id}");
     }
+    
+    /**
+     *  Store progress sync progress inside API.
+     *  @param  array   Assoc array with data to be sent to API
+     */
+    public function updateSyncStatus()
+    {
+        // get config helper into local scope
+        $config = Mage::helper('integration/config');
+        
+        // get total number of models that should be synced
+        $total = $config->getSyncTotal();
+        
+        // if we have total number we can go and report it to Copernica
+        if ($total) $this->request->put("magento/sync", array (
+            'total'     => $total,
+            'processed' => $config->getSyncProgress()
+        ));
+        
+        // remove sync entity (as there is no initial sync going on)
+        else $this->request->delete("magento/sync");
+    }
 }
