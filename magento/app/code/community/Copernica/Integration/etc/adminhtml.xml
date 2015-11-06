@@ -22,18 +22,26 @@
         <resources>
             <admin>
                 <children>
-                    <integration translate="title" module="integration">
-                        <title>Copernica Magento Integration</title>
-                        <sort_order>120</sort_order>
+                    <system>
                         <children>
-                            <settings translate="title">
-                                <title>Settings</title>
-                            </settings>
-                            <export translate="title">
-                                <title>Synchronize Data</title>
-                            </export>
+                            <config>
+                                <children>
+                                    <integration translate="title" module="integration">
+                                        <title>Copernica Magento Integration</title>
+                                        <sort_order>120</sort_order>
+                                        <children>
+                                            <settings translate="title">
+                                                <title>Settings</title>
+                                            </settings>
+                                            <export translate="title">
+                                                <title>Synchronize Data</title>
+                                            </export>
+                                        </children>
+                                    </integration>
+                                </children>
+                            </config>
                         </children>
-                    </integration>
+                    </system>
                </children>
            </admin>
        </resources>
