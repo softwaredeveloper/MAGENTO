@@ -41,6 +41,34 @@ Directory structure
                 directory has exactly the same structure as a normal
                 Magento installation, so the extension can be copied
                 into a running Magento installation.
+                
+Installation
+~~~~~~~~~~~~
+This extension can be installed in number of ways: Magento Connect, modman and 
+copy pasting. 
+
+Magento Connect is the easiest way for non technical Magento users. Just go to
+http://www.magentocommerce.com/magento-connect/copernica.html and follow 
+instructions on the page.
+
+modman is a light weight package manager designed to work with Magento. Go to 
+modman page at https://github.com/colinmollenhour/modman and install modman. 
+After that type in following commands in magneto installation root directory to 
+install extension:
+
+
+``` 
+
+git clone https://github.com/colinmollenhour/modman.git ~/Copernica_Integration
+
+modman init
+
+modman link ~/Copernica_Integration
+
+``` 
+
+Thir and final way is to copy paste content of magento dir over Magento installation 
+directory. 
 
 Registering the extension
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -204,6 +232,3 @@ deploy magento extension:
     Create Package" button. A Copernica-{version}.tgz file should be created.
     This file should be uploaded on magento connect website. After upload is
     completed new extension version will be available via connect platform.
-
-
-
