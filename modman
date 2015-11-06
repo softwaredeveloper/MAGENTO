@@ -1,0 +1,6 @@
+# Copernica_Integration
+
+magento/app/code/community/Copernica/Integration                    app/code/community/Copernica/Integration 
+magento/app/design/adminhtml/default/default/template/integration   app/design/adminhtml/default/default/template/integration
+magento/app/etc/modules/Copernica_Integration.xml                   app/etc/modules/Copernica_Integration.xml
+magento/shell/copernica.php                                         shell/copernica.php

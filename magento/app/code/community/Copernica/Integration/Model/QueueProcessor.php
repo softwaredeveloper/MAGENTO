@@ -219,6 +219,12 @@ class Copernica_Integration_Model_QueueProcessor
     {
         // create sync processor that will process more items at once
         Mage::getModel('integration/SyncProcessor')->process();
+        
+        /**
+         *  When we are done with processing this particular event we should 
+         *  go and update the api about the status of the process.
+         */
+        $this->api->updateSyncStatus();
     }
 
     /**

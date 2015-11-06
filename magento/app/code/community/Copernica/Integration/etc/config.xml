@@ -2,7 +2,7 @@
 <config>
     <modules>
         <Copernica_Integration>
-            <version>15.45.0</version>
+            <version>15.45.1</version>
         </Copernica_Integration>
     </modules>
     <global>
@@ -347,11 +347,11 @@
         <copernica_options>
             <apisync>
                 <!-- by default integration is enabled for every type of website/store. User will have to explicitly say that he does not want to sync specific store --> 
-                <enabled>enable</enabled>
+                <enabled>1</enabled>
             </apisync>
             <productview>
                 <!-- by default this option is on -->
-                <enabled>enable</enabled>
+                <enabled>1</enabled>
                 
                 <!-- 10 minutes is a safe amount of time that has to pass to consider product catalog page view as unique one -->
                 <throttle>10</throttle>

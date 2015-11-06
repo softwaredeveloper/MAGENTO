@@ -122,75 +122,12 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
             case 'customer/group':          foreach ($collection as $group) $this->storeGroup($group); break;
             case 'wishlist/wishlist':       foreach ($collection as $wishlist) $this->storeWishlist($wishlist); break;
             case 'wishlist/item':           foreach ($collection as $item) $this->storeWishlistItem($item); break;
-
-            /** 
-             *  Category collection does not load all needed category data. Thus 
-             *  we have to realod category object to fetch additional data.
-             */
-            case 'catalog/category':
-                foreach ($collection as $category) 
-                {
-                    // reaload category
-                    $category = Mage::getModel('catalog/category')->load($category->getId());
-
-                    // store reloaded category
-                    $this->storeCategory($category);                    
-                }
-                break;
-
-            /** 
-             *  Products collection does load product objects with some of the
-             *  needed data, that is why we want to reload product instance
-             *  via Mage::getModel() method.
-             */
-            case 'catalog/product': 
-                foreach ($collection as $product) 
-                {
-                    // reload product
-                    $product = Mage::getModel('catalog/product')->load($product->getId());
-
-                    // store reloaded product
-                    $this->storeProduct($product); 
-                }
-                break;
-
-            /** 
-             *  Addresses loaded from collections don't contain all needed data.
-             *  So, to ensure that we have all needed data we have to force 
-             *  Magento to fetch full data set.
-             */
+            case 'catalog/category':        foreach ($collection as $item) $this->storeCategory($item); break;
+            case 'catalog/product':         foreach ($collection as $item) $this->storeProduct($item); break;
             case 'sales/order_address':
             case 'sales/quote_address':
-            case 'customer/address': 
-                foreach ($collection as $address)
-                {
-                    // reload address data
-                    $address = Mage::getModel($resourceName)->load($address->getId());
-
-                    // store address
-                    $this->storeAddress($address);  
-                }
-
-                // we are done here
-                break;
-
-            /** 
-             *  Customer collection does load customer objects with some of the
-             *  needed data, that is why we want to reload customer instance
-             *  via Mage::getModel() method.
-             */
-            case 'customer/customer': 
-                foreach ($collection as $customer) 
-                {
-                    // reload customer data
-                    $customer = Mage::getModel('customer/customer')->load($customer->getId());
-
-                    // store customer
-                    $this->storeCustomer($customer); 
-                }
-
-                // we are done here
-                break;
+            case 'customer/address':        foreach ($collection as $item) $this->storeAddress($item); break;
+            case 'customer/customer':       foreach ($collection as $item) $this->storeCustomer($item); break;
         }
         
         /**
@@ -250,7 +187,7 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
          *  send all attributes as objects inside one array.
          */
         $data['attributes'] = array();
-
+        
         /**
          *  Beside basic product data we also want to sync attributes information
          *  for each product.
@@ -263,10 +200,10 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
                 'value'             => $attribute->getFrontend()->getValue($product),
             );
         }
-
+        
         // we will store them as simple array
         $data['options'] = array();
-     
+        
         // get all product options   
         foreach ($product->getOptions() as $option)
         {
@@ -294,7 +231,7 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
                 $optionData['imageSizeY'] = $option->getImageSizeY();
                 $optionData['fileExtension'] = $option->getFileExtension();
             }
-
+        
             /**
              *  Iterate over all options values and assign them to values property.
              */
@@ -309,7 +246,7 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
                     'sortOrder' => $value->getSortOrder(),
                 );
             }
-    
+        
             // assign options data
             $data['options'][] = $optionData;
         }
@@ -728,6 +665,9 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
         } 
         else if ($address instanceof Mage_Sales_Model_Quote_Address)
         {
+            // get quote Id
+            $quoteId = $address->getQuoteId();
+            
             /**
              *  This part is really retarded. When data is fetched by magento, 
              *  from database into Mage_Sales_Model_Quote_Address instance.
@@ -736,11 +676,14 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
              *
              *  Thus, to fix it we have to make very specific sql query.
              */
-            $resource = Mage::getSingleton('core/resource');
-            $connRead = $resource->getConnection('core_read');
-            
-            // get quote Id
-            $quoteId = $connRead->fetchOne("SELECT quote_id FROM {$resource->getTableName('sales/quote_address')} WHERE `address_id` = :address", array('address' => $address->getId()));
+            if (!$quoteId)
+            {
+                $resource = Mage::getSingleton('core/resource');
+                $connRead = $resource->getConnection('core_read');
+                
+                // get quote Id
+                $quoteId = $connRead->fetchOne("SELECT quote_id FROM {$resource->getTableName('sales/quote_address')} WHERE `address_id` = :address", array('address' => $address->getId()));
+            }
 
             // load quote instance
             $quote = Mage::getModel('sales/quote')->load($quoteId);
@@ -917,5 +860,27 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
     public function removeWishlistItem($id)
     {
         $this->request->delete("magento/wishlistitem/{$id}");
+    }
+    
+    /**
+     *  Store progress sync progress inside API.
+     *  @param  array   Assoc array with data to be sent to API
+     */
+    public function updateSyncStatus()
+    {
+        // get config helper into local scope
+        $config = Mage::helper('integration/config');
+        
+        // get total number of models that should be synced
+        $total = $config->getSyncTotal();
+        
+        // if we have total number we can go and report it to Copernica
+        if ($total) $this->request->put("magento/sync", array (
+            'total'     => $total,
+            'processed' => $config->getSyncProgress()
+        ));
+        
+        // remove sync entity (as there is no initial sync going on)
+        else $this->request->delete("magento/sync");
     }
 }
