@@ -296,12 +296,13 @@ class Copernica_Integration_Model_SyncProcessor
          *  bit more custom.
          */
         if ($this->currentModel == 'sales/quote_item') return $this->getQuoteItemsCollection();
+        
+        // get model and collection
+        $model = Mage::getModel($this->currentModel);
+        $collection = $model->getCollection();
 
-        // get collection
-        $collection = Mage::getModel($this->currentModel)->getCollection();
-
-        // @see docblock for self::collectionPrimaryKey()
-        $primaryKey = $this->collectionPrimaryKey($collection);
+        // get primary key
+        $primaryKey = $model->getIdFieldName();
 
         // add filter to get models with id greater than last id
         $collection->addFieldToFilter($primaryKey, array (
@@ -310,6 +311,12 @@ class Copernica_Integration_Model_SyncProcessor
 
         // set batch
         $collection->setPageSize($this->batch);
+        
+        // if ($collection instanceof Mage_Review_Model_Resource_Review_Summary_Collection) $collection->getSelect()->reset(Zend_Db_Select::COLUMNS)->columns('*');
+        // if ($collection instanceof Mage_Sales_Model_Resource_Sale_Collection) $collection->getSelect()->reset(Zend_Db_Select::COLUMNS)->columns('*');
+        
+        if ($collection instanceof Mage_Eav_Model_Entity_Collection_Abstract) $collection->addAttributeToSelect('*');
+        if ($collection instanceof Mage_Core_Model_Resource_Db_Collection_Abstract) $collection->addFieldToSelect('*');
 
         // if we have smaller collection than requested that means we can 
         // switch collection to next one
@@ -320,31 +327,6 @@ class Copernica_Integration_Model_SyncProcessor
 
         // return prepared collection
         return $collection;
-    }
-
-    /**
-     *  In most of data models out there primary key is called 'id'. That is 
-     *  just perfectly fine and resonable. In magento, core developers decided
-     *  to make a mess, so they decided to call primary keys like 'entity_id',
-     *  'subscriber_id', 'some-non-standard-key_id'. Cause of that we have to 
-     *  detect what kind of collection we have and adjust filter with proper 
-     *  name for primary key.
-     *  @param  Varien_Data_Collection_Db
-     *  @return string
-     */
-    private function collectionPrimaryKey(Varien_Data_Collection_Db $collection) 
-    {
-        switch (get_class($collection)) {
-            case 'Mage_Core_Model_Resource_Store_Collection': return 'store_id';
-            case 'Mage_Sales_Model_Resource_Quote_Item_Collection': return 'item_id';
-            case 'Mage_Sales_Model_Resource_Order_Item_Collection': return 'item_id';
-            case 'Mage_Newsletter_Model_Resource_Subscriber_Collection': return 'subscriber_id';
-            case 'Mage_Sales_Model_Resource_Quote_Address_Collection': return 'address_id';
-            case 'Mage_Customer_Model_Resource_Group_Collection': return 'customer_group_id';
-            case 'Mage_Wishlist_Model_Resource_Wishlist_Collection': return 'wishlist_id';
-            case 'Mage_Wishlist_Model_Resource_Item_Collection': return 'wishlist_item_id';
-            default: return 'entity_id';
-        }
     }
 
     /**
