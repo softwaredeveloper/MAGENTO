@@ -271,7 +271,7 @@ class Copernica_Integration_Model_SyncProcessor
         ));
 
         // when there is no more quotes to sync we should switch collection
-        if ($quoteCollection->count() == 1) $this->switchCollection = true;
+        if ($quoteCollection->count() <= 1) $this->switchCollection = true;
 
         // get 1st quote that we can use
         $quote = $quoteCollection->getFirstItem();
@@ -300,9 +300,6 @@ class Copernica_Integration_Model_SyncProcessor
         // get model and collection
         $model = Mage::getModel($this->currentModel);
         $collection = $model->getCollection();
-
-        // get primary key
-        $primaryKey = $model->getIdFieldName();
 
         // add filter to get models with id greater than last id
         $collection->addFieldToFilter($primaryKey, array (
