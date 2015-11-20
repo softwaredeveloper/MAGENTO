@@ -29,18 +29,18 @@
  *  This class will be a base for our visual constrollers.
  */
 class Copernica_Integration_Controller_Base extends Mage_Adminhtml_Controller_Action
-{
+{    
     /**
-     *  index action.
+     *  Check extension state and emmit proper warning into session object.
      */
-    public function _construct()
+    protected function checkExtensionState()
     {
         // get queue
         $queue = Mage::getResourceModel('integration/queue_collection');
-
+        
         // check current queue state
         $this->checkQueueSize($queue);
-
+        
         // check current queue time
         $this->checkQueueTime($queue);
     }

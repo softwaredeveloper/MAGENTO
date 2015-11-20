@@ -60,6 +60,9 @@ class Copernica_Integration_Adminhtml_integration_ExportController extends Coper
 
         // render layout
         $this->renderLayout();
+        
+        // check extension state
+        $this->checkExtensionState();
     }
 
     /**

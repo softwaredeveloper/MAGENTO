@@ -59,6 +59,9 @@ class Copernica_Integration_Adminhtml_integration_SettingsController extends Cop
 
         // Render the layout
         $this->renderLayout();
+        
+        // check extension state
+        $this->checkExtensionState();
     }
 
     /**
