@@ -302,7 +302,7 @@ class Copernica_Integration_Model_SyncProcessor
         $collection = $model->getCollection();
 
         // add filter to get models with id greater than last id
-        $collection->addFieldToFilter($primaryKey, array (
+        $collection->addFieldToFilter($model->getIdFieldName(), array (
             'gt' => $this->lastModelId
         ));    
 
