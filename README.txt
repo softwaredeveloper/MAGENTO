@@ -17,9 +17,8 @@ following ones:
     The other plugin available on MagentoConnect is the brand new plugin
     developed by Copernica - and this is the one that you're now looking 
     at. This plugin uses a custom-for-Magento API to communicate between 
-    Copernica and Magento. At this point in time, this plugin is still in 
-    development and can not yet be used in production. The latest version 
-    of the source code for this new plugin can be found on Github:
+    Copernica and Magento. The latest version of the source code for this 
+    new plugin can be found on Github:
 
         https://github.com/CopernicaMarketingSoftware/MAGENTO
         
