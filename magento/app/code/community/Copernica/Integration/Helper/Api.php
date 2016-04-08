@@ -99,12 +99,12 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
 
     /**
      *  Store collection of models
-     *  
+     *
      *  @param  Varien_Data_Collection_Db
      */
     public function storeCollection (Varien_Data_Collection_Db $collection)
     {
-        // if we don't have a proper collection or don't have anything inside 
+        // if we don't have a proper collection or don't have anything inside
         // collection we can bail out
         if (!is_object($collection) && $collection->count() == 0) return;
 
@@ -129,9 +129,9 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
             case 'customer/address':        foreach ($collection as $item) $this->storeAddress($item); break;
             case 'customer/customer':       foreach ($collection as $item) $this->storeCustomer($item); break;
         }
-        
+
         /**
-         *  When dealing with whole collections it's better to finalize current 
+         *  When dealing with whole collections it's better to finalize current
          *  set of API requests. This way we can safely continue to next requests.
          */
         $this->request->commit();
@@ -147,7 +147,7 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
         // we will need store instance to get the currency code
         $store = Mage::getModel('core/store')->load($product->getStoreId());
 
-        /** 
+        /**
          *  Previously we used Mage_Catalog_Model_Product::getImageUrl() to fetch
          *  product image url. It's wrong for 2 reasons: url is not to original
          *  image but to modified image and that image is stored inside cache.
@@ -187,7 +187,7 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
          *  send all attributes as objects inside one array.
          */
         $data['attributes'] = array();
-        
+
         /**
          *  Beside basic product data we also want to sync attributes information
          *  for each product.
@@ -200,16 +200,16 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
                 'value'             => $attribute->getFrontend()->getValue($product),
             );
         }
-        
+
         // we will store them as simple array
         $data['options'] = array();
-        
-        // get all product options   
+
+        // get all product options
         foreach ($product->getOptions() as $option)
         {
             /**
-             *  Important parts about the options is the option title (customer 
-             *  friendly version), type of the field, ofcourse, the potential 
+             *  Important parts about the options is the option title (customer
+             *  friendly version), type of the field, ofcourse, the potential
              *  values that can be assigned to option.
              */
             $optionData = array(
@@ -221,9 +221,9 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
                 'maxCharacters' => $option->getMaxCharacters(),
                 'values'        => array(),
             );
-        
+
             /**
-             *  With file type we can have additional data to sync. 
+             *  With file type we can have additional data to sync.
              */
             if ($option->getType() == 'file')
             {
@@ -231,7 +231,7 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
                 $optionData['imageSizeY'] = $option->getImageSizeY();
                 $optionData['fileExtension'] = $option->getFileExtension();
             }
-        
+
             /**
              *  Iterate over all options values and assign them to values property.
              */
@@ -246,7 +246,7 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
                     'sortOrder' => $value->getSortOrder(),
                 );
             }
-        
+
             // assign options data
             $data['options'][] = $optionData;
         }
@@ -311,8 +311,8 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
          *  Load the accompanying quote by id, since the getQuote method
          *  seems to be severely borken in some magento versions
          *  Quote is a store entity. And just cause of that magento doing funky
-         *  stuff when fetching quote just by id. To fetch quote with any kind 
-         *  of useful data we have to explicitly say to magento that we want a 
+         *  stuff when fetching quote just by id. To fetch quote with any kind
+         *  of useful data we have to explicitly say to magento that we want a
          *  quote without store.
          */
         $quote = Mage::getModel('sales/quote')->loadByIdWithoutStore($item->getQuoteId());
@@ -324,14 +324,14 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
         $item->setQuote($quote);
 
         /**
-         *  Something about magento address handling. It's possible to set 
+         *  Something about magento address handling. It's possible to set
          *  shipping address for each quote item to completely different places.
          *  The 'multi shipping'. Really nice feature. Thus, you can not ask
-         *  the quote item to where it will be shipped. Instead you have to 
+         *  the quote item to where it will be shipped. Instead you have to
          *  ask the quote address to where item will be shipped (by ::getItemByQuoteItemId())
-         *  and then you will be given a address object or false value when 
-         *  item does not have any special destination. 
-         *  For regular person, false value would mean that item does not have 
+         *  and then you will be given a address object or false value when
+         *  item does not have any special destination.
+         *  For regular person, false value would mean that item does not have
          *  a shipping destination.
          */
 
@@ -352,57 +352,57 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
         );
 
         /**
-         *  Quote items can have selected number of custom options. Quote item 
+         *  Quote items can have selected number of custom options. Quote item
          *  class has method ::getOptions(). It doesn't work in expected way.
          *  Even when quote item has options set it will return null regardless.
-         *  Thus, to get the actual options we will have to make additioanl 
+         *  Thus, to get the actual options we will have to make additioanal
          *  processing. First we will have to get options data.
          */
         $options = Mage::getResourceModel('sales/quote_item_option_collection');
         $options->addItemFilter($item->getId());
         foreach($options as $option) {
-            
+
             /**
-             *  Options collection contains options data that is quite odd. It 
+             *  Options collection contains options data that is quite odd. It
              *  contains options with codes like "info_buyRequest" and "option_ids".
              *  Such are not really options so we can skip them.
-             */ 
+             */
             if ($option->getCode() == 'info_buyRequest' || $option->getCode() == 'option_ids') continue;
 
             // for copernica the option id is important and not the 'code' value.
             $matchResult = preg_match('/option_([0-9]+)/', $option->getCode(), $matches);
-            
+
             // if no matches we can proceed further
             if (!$matchResult) continue;
 
             /**
-             *  At this point we are nearly done. We have option id and we have 
-             *  the value. But we could encounter serialized data as value. 
+             *  At this point we are nearly done. We have option id and we have
+             *  the value. But we could encounter serialized data as value.
              *  Yes, serialized data. So we should try to unserialize data.
              */
             $value = unserialize($option->getValue());
 
             /**
-             *  In most of the cases data should be a scalar. This will cause 
+             *  In most of the cases data should be a scalar. This will cause
              *  unserialization process to fail and return false. In such cases
              *  we will go back and use original data.
              */
             if ($value === false) $value = $option->getValue();
 
             /**
-             *  With custom option we can end up with file option. We should 
-             *  provide a url to that file. Thus, magento is being really 
+             *  With custom option we can end up with file option. We should
+             *  provide a url to that file. Thus, magento is being really
              *  uncooperative in this manner. At this time we are just sending
              *  all data with the result, but we are missing the actual url that
              *  can be used to show that file.
              *  @todo feature missing
              */
-             
+
             $optionId = $matches[1];
-            
+
             /**
-             *  It may happen that inside database there is reference to option 
-             *  instance that is no longer existing. Thus we should check if 
+             *  It may happen that inside database there is reference to option
+             *  instance that is no longer existing. Thus we should check if
              *  such option is still in database. If so then we will send it to
              *  Copernica API.
              */
@@ -419,7 +419,7 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
             $read = $resource->getConnection('core_read');
             $sql = "SELECT title FROM {$tableName} WHERE store_id = 0 AND option_id = {$optionId}";
             $title = $read->fetchOne($sql);
-            
+
             /**
              *  Inside file option magento can store quite an amount of information.
              *  We don't want to sent it all (as is) to Copernica.
@@ -433,7 +433,7 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
                 'value' => $value,
             );
         }
-    
+
         // store the quote item
         $this->request->put("magento/quoteitem/{$item->getId()}", $data);
     }
@@ -611,25 +611,25 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
     public function storeAddress(Mage_Customer_Model_Address_Abstract $address)
     {
         /**
-         *  Magento has a little mess with address handling. Basically there 
-         *  can be several types of address that will have common structure. 
+         *  Magento has a little mess with address handling. Basically there
+         *  can be several types of address that will have common structure.
          *  Semantically they mean same this: a real place in the world. It would
          *  be wise to put them inside one table and have only one class that will
-         *  describe such basic thing. Magento core team decided to separate 
+         *  describe such basic thing. Magento core team decided to separate
          *  such entities and make separata ID sequences for customer, order and
          *  quote address (maybe there are more, but they don't concern us right now),
          *  making whole address handling very ambiguous.
-         *  To make things easier we will limit ourselfs to customer, order and quote 
+         *  To make things easier we will limit ourselfs to customer, order and quote
          *  address and assign them a 'type' that will describe from what kind
-         *  of magento address copernica address came. 
+         *  of magento address copernica address came.
          *  If we will encounter any other type of address we will just ignore it
          *  it since we don't have any means ofhadnling such.
          *
          *  And since customer, order, quote flavors of common address classes
-         *  are pretty much separate they have different interfaces for fetching 
+         *  are pretty much separate they have different interfaces for fetching
          *  common data like customer id or shipping and billing flags. Thus we
          *  have to parse them in correct manner.
-         */ 
+         */
         if ($address instanceof Mage_Customer_Model_Address)
         {
             // get customer instance
@@ -655,23 +655,23 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
             if (!Mage::getStoreConfig('copernica_options/apisync/enabled', $order->getStoreId())) return;
 
             // set address type, customer, billing and shipping flag
-            $metaData = array( 
+            $metaData = array(
                 'type'              => 'order',
                 'billingAddress'    => $order->getData('billing_address_id') == $address->getId(),
                 'deliveryAddress'   => $order->getData('shipping_address_id') == $address->getId(),
                 'order'             => $order->getId(),
                 'customer'          => $order->getData('customer_id'),
-            );  
-        } 
+            );
+        }
         else if ($address instanceof Mage_Sales_Model_Quote_Address)
         {
             // get quote Id
             $quoteId = $address->getQuoteId();
-            
+
             /**
-             *  This part is really retarded. When data is fetched by magento, 
+             *  This part is really retarded. When data is fetched by magento,
              *  from database into Mage_Sales_Model_Quote_Address instance.
-             *  'quote_id' is not set despite that it's has a value in mysql 
+             *  'quote_id' is not set despite that it's has a value in mysql
              *  table.
              *
              *  Thus, to fix it we have to make very specific sql query.
@@ -680,7 +680,7 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
             {
                 $resource = Mage::getSingleton('core/resource');
                 $connRead = $resource->getConnection('core_read');
-                
+
                 // get quote Id
                 $quoteId = $connRead->fetchOne("SELECT quote_id FROM {$resource->getTableName('sales/quote_address')} WHERE `address_id` = :address", array('address' => $address->getId()));
             }
@@ -698,8 +698,8 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
                 'deliveryAddress'   => $address->getData('address_type') == 'shipping',
                 'customer'          => $address->getData('customer_id'),
                 'quote'             => $quoteId,
-            );  
-        } 
+            );
+        }
 
         // we have some unknown address type. We will not do anything good with it
         else return;
@@ -733,7 +733,7 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
 
     /**
      *  Store a store in copernica
-     *  
+     *
      *  @param  Mage_Core_Model_Store
      */
     public function storeStore(Mage_Core_Model_Store $store)
@@ -798,7 +798,7 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
     {
         $this->request->delete("magento/group/{$id}");
     }
-    
+
     /**
      *  Store wishlist
      *  @param  Mage_Wishlist_Model_Wishlist
@@ -829,7 +829,7 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
             'quantity'      => $item->getQty(),
         ));
     }
-    
+
     /**
      *  Store product view.
      *  @param  Copernica_Integration_Model_ViewedProduct
@@ -843,7 +843,7 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
             "viewed_at"     => $view->getViewedAt(),
         ));
     }
-    
+
     /**
      *  Remove magento wishlist in copernica
      *  @param  int
@@ -852,7 +852,7 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
     {
         $this->request->delete("magento/wishlist/{$id}");
     }
-    
+
     /**
      *  Remove magento wishlist item in copernica
      *  @param  int
@@ -861,7 +861,7 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
     {
         $this->request->delete("magento/wishlistitem/{$id}");
     }
-    
+
     /**
      *  Store progress sync progress inside API.
      *  @param  array   Assoc array with data to be sent to API
@@ -870,16 +870,16 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
     {
         // get config helper into local scope
         $config = Mage::helper('integration/config');
-        
+
         // get total number of models that should be synced
         $total = $config->getSyncTotal();
-        
+
         // if we have total number we can go and report it to Copernica
         if ($total) $this->request->put("magento/sync", array (
             'total'     => $total,
             'processed' => $config->getSyncProgress()
         ));
-        
+
         // remove sync entity (as there is no initial sync going on)
         else $this->request->delete("magento/sync");
     }
