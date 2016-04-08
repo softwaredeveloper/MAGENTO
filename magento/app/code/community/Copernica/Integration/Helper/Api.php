@@ -284,6 +284,8 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
             'currency'          =>  $quote->getQuoteCurrencyCode(),
             'shipping_cost'     =>  $quote->getShippingAmount(),
             'tax'               =>  isset($totals['tax']) ? $totals['tax']->getValue() : 0,
+            'subtotal'          =>  isset($totals['subtotal']) ? $totals['subtotal']->getValue() : 0,
+            'grand_total'       =>  isset($totals['grand_total']) ? $totals['grand_total']->getValue() : 0,
             'ip_address'        =>  $quote->getRemoteIp(),
             'last_modified'     =>  $quote->getUpdatedAt(),
         ));
