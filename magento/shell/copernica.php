@@ -46,6 +46,7 @@ class Copernica_Integration_Shell_Copernica extends Mage_Shell_Abstract
         {
             case 'status':      $output = $this->processStatus(); break;
             case 'sync-start':  $output = $this->processSync(); break;
+            case 'process':     $output = $this->processProcess(); break;
             default: $output = 'invalid command'; break;
         }
 
@@ -127,8 +128,27 @@ class Copernica_Integration_Shell_Copernica extends Mage_Shell_Abstract
         Mage::getModel('integration/queue')->setAction('start_sync')->save();
 
         // create and return output data
-        $data = new strClass;
+        $data = new stdClass;
         $data->started = true;
+        return $data;
+    }
+
+    /**
+     *  Process `process` command.
+     */
+    protected function processProcess()
+    {
+        // get the processor
+        $processor = Mage::getModel('integration/QueueProcessor');
+
+        // process the queue
+        $processor->processQueue();
+
+        // prepare the output
+        $data = new stdClass;
+        $data->processed = $processor->getProcessedTasks();
+
+        // return output
         return $data;
     }
 

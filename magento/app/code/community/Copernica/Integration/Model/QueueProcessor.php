@@ -62,8 +62,8 @@ class Copernica_Integration_Model_QueueProcessor
     private $api = null;
 
     /**
-     *  Reporter for generating processor reports. By default in 
-     *  {{base_dir}}/var/copernica/report.json will be stored results of each 
+     *  Reporter for generating processor reports. By default in
+     *  {{base_dir}}/var/copernica/report.json will be stored results of each
      *  run.
      *
      *  @var Copernica_Integration_Model_QueueReporter
@@ -157,7 +157,7 @@ class Copernica_Integration_Model_QueueProcessor
      *  which entity we want to store inside copernica.
      *
      *  @param  Mage_Core_Model_Abstract
-     *  @throws Exception   If something really bad happens an exception will be 
+     *  @throws Exception   If something really bad happens an exception will be
      *                      rised as indication of error. Such exception should
      *                      be handled by caller.
      */
@@ -191,7 +191,7 @@ class Copernica_Integration_Model_QueueProcessor
      *
      *  @param  string      Entity model identifier.
      *  @param  int         Entity ID
-     *  @throws Exception   If something really bad happens an exception will be 
+     *  @throws Exception   If something really bad happens an exception will be
      *                      rised as indication of error. Such exception should
      *                      be handled by caller.
      */
@@ -219,9 +219,9 @@ class Copernica_Integration_Model_QueueProcessor
     {
         // create sync processor that will process more items at once
         Mage::getModel('integration/SyncProcessor')->process();
-        
+
         /**
-         *  When we are done with processing this particular event we should 
+         *  When we are done with processing this particular event we should
          *  go and update the api about the status of the process.
          */
         $this->api->updateSyncStatus();
@@ -238,9 +238,9 @@ class Copernica_Integration_Model_QueueProcessor
         $this->processedTasks++;
 
         /**
-         *  Since we are processing item right now (well about to make the 
-         *  processing happen), we want to remove the item from the queue. We 
-         *  know all the data that we need so there is no point of keeping that 
+         *  Since we are processing item right now (well about to make the
+         *  processing happen), we want to remove the item from the queue. We
+         *  know all the data that we need so there is no point of keeping that
          *  item around. Also, queue items check if they are duplicates when they
          *  are saved, so we want to remove queue item as soon as possible.
          */
@@ -252,7 +252,7 @@ class Copernica_Integration_Model_QueueProcessor
              *  Every action is little bit different from other ones. We have
              *  specialized methods that will take care each of them.
              */
-            switch($item->getAction()) 
+            switch($item->getAction())
             {
                 case 'start_sync':  $this->handleSync(); break;
                 case 'store':       $this->handleStore($item->getObject()); break;
@@ -272,5 +272,15 @@ class Copernica_Integration_Model_QueueProcessor
             // store error
             $this->reporter->storeFailure($exception->getMessage(), array( 'resource' => $item->getObjectResourceName(), 'action' => $item->getAction() ));
         }
+    }
+
+    /**
+     *  Get number of processed tasks so far.
+     *
+     *  @return int
+     */
+    public function getProcessedTasks()
+    {
+        return $this->processedTasks;
     }
 }
