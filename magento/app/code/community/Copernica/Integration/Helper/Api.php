@@ -49,6 +49,20 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
     }
 
     /**
+     *  Method to set the request handler.
+     *  @param  Copernica_Integration_Helper_FakeRequest|Copernica_Integration_Helper_RESTRequest
+     *  @return Copernica_Integration_Helper_Api
+     */
+    public function setRequestHandler($request)
+    {
+        // set the request
+        $this->request = $request;
+
+        // allow chaining
+        return $this;
+    }
+
+    /**
      *  Check if this API instance is valid.
      *
      *  @return boolean
@@ -581,6 +595,9 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
         // if we do not get a gender something went wrong (or we don't know the gender)
         if (empty($gender)) $gender = null;
 
+        // get date or birth of a customer
+        $dob = $customer->getData('dob');
+
         // store the customer
         $this->request->put("magento/customer/{$customer->getId()}", array(
             'webstore'      =>  $customer->getStoreId(),
@@ -591,6 +608,7 @@ class Copernica_Integration_Helper_Api extends Mage_Core_Helper_Abstract
             'email'         =>  $customer->getEmail(),
             'gender'        =>  $gender,
             'group'         =>  $customer->getGroupId(),
+            'dob'           =>  $dob,
         ));
     }
 
