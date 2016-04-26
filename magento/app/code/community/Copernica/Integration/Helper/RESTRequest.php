@@ -37,7 +37,7 @@ class Copernica_Integration_Helper_RESTRequest extends Mage_Core_Helper_Abstract
      *  using standard servers (https://api.copernica.com). Thus, in some 
      *  edge cases an alternative server can be used (has to be consulted
      *  with copernica support team)
-     *  
+     *
      *  @var    string
      */
     protected $apiUrl;

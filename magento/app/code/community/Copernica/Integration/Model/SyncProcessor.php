@@ -32,7 +32,7 @@
 class Copernica_Integration_Model_SyncProcessor
 {
     /**
-     *  This array will determine what kind of models we should process and 
+     *  This array will determine what kind of models we should process and
      *  order in which we will be processing such models.
      *  @var    array
      */
@@ -54,7 +54,7 @@ class Copernica_Integration_Model_SyncProcessor
         'wishlist/item',
     );
 
-    /** 
+    /**
      *  Current model resource name.
      *  @var    string
      */
@@ -113,8 +113,8 @@ class Copernica_Integration_Model_SyncProcessor
              *  It seems that magento does not allow to fetch collection of all
              *  quote items just like that. It requires from us to provide quote
              *  ID for that collection. We don't want to iterate over every quote
-             *  and fetch collection from it and count that collection and so. 
-             *  Instead we can just make a raw query on table that holds quote 
+             *  and fetch collection from it and count that collection and so.
+             *  Instead we can just make a raw query on table that holds quote
              *  items and count all rows.
              */
             if ($model == 'sales/quote_item')
@@ -122,7 +122,7 @@ class Copernica_Integration_Model_SyncProcessor
                 // get overall resource
                 $resource = Mage::getSingleton('core/resource');
 
-                // get connection 
+                // get connection
                 $connection = $resource->getConnection('core_read');
 
                 // get quotes items table name
@@ -130,7 +130,7 @@ class Copernica_Integration_Model_SyncProcessor
 
                 // execute query and add the result to total
                 $total += $connection->fetchOne(sprintf("SELECT count(*) FROM %s", $table));
-            } 
+            }
 
             // use standard ::getSize() method to get collection length
             else $total += Mage::getModel($model)->getCollection()->getSize();
@@ -140,7 +140,7 @@ class Copernica_Integration_Model_SyncProcessor
         return $total;
     }
 
-    /** 
+    /**
      *  Store current state
      */
     private function storeState()
@@ -188,9 +188,9 @@ class Copernica_Integration_Model_SyncProcessor
     }
 
     /**
-     *  We are processing collections in manageable chunks. This method will 
+     *  We are processing collections in manageable chunks. This method will
      *  process current chunk and prepare next one if needed.
-     * 
+     *
      *  @return numeric     Number of items processed
      */
     private function processNextChunk()
@@ -220,22 +220,22 @@ class Copernica_Integration_Model_SyncProcessor
         $counter = 0;
 
         // when we are syncing small collections we should continue syncing
-        while ($counter < $this->batch) 
+        while ($counter < $this->batch)
         {
             if ($this->isComplete()) return $this->resetState();
-            $counter += $this->processNextChunk(); 
+            $counter += $this->processNextChunk();
         }
-        
+
         // are we done with sync?
         if ($this->isComplete()) return $this->resetState();
 
         /**
-         *  We want to store the actual progress of sync. Thus we have to store 
+         *  We want to store the actual progress of sync. Thus we have to store
          *  amount of synced elements.
          */
         $progress = ($progress = Mage::helper('integration/config')->getSyncProgress()) ? $progress+$counter : $counter;
         Mage::helper('integration/config')->setSyncProgress($progress);
-        
+
         // we are done so we can store current state
         $this->storeState();
 
@@ -243,7 +243,7 @@ class Copernica_Integration_Model_SyncProcessor
         Mage::getModel('integration/queue')->setAction('start_sync')->save();
     }
 
-    /** 
+    /**
      *  Did SyncProcessor process all available data?
      *  @return bool
      */
@@ -254,9 +254,9 @@ class Copernica_Integration_Model_SyncProcessor
 
     /**
      *  Cause quote items collection is somehow badly designed, we have to handle
-     *  that case in more specialized way. Instead of getting all quotes items 
+     *  that case in more specialized way. Instead of getting all quotes items
      *  and traversing over whole collection we will ask every quote for it's items.
-     *  This way all needed informations for quote items collection should be set 
+     *  This way all needed informations for quote items collection should be set
      *  propery.
      *  @return Mage_Sales_Model_Resource_Quote_Item_Collection
      */
@@ -290,13 +290,13 @@ class Copernica_Integration_Model_SyncProcessor
     private function currentCollection()
     {
         /*
-         *  We can not process quote items collection in same way that we do 
-         *  with other collections (cause they are not usable when there is 
+         *  We can not process quote items collection in same way that we do
+         *  with other collections (cause they are not usable when there is
          *  no quote assigned to such collection). So we have to make it a little
          *  bit more custom.
          */
         if ($this->currentModel == 'sales/quote_item') return $this->getQuoteItemsCollection();
-        
+
         // get model and collection
         $model = Mage::getModel($this->currentModel);
         $collection = $model->getCollection();
@@ -304,18 +304,16 @@ class Copernica_Integration_Model_SyncProcessor
         // add filter to get models with id greater than last id
         $collection->addFieldToFilter($model->getIdFieldName(), array (
             'gt' => $this->lastModelId
-        ));    
+        ));
 
         // set batch
         $collection->setPageSize($this->batch);
-        
-        // if ($collection instanceof Mage_Review_Model_Resource_Review_Summary_Collection) $collection->getSelect()->reset(Zend_Db_Select::COLUMNS)->columns('*');
-        // if ($collection instanceof Mage_Sales_Model_Resource_Sale_Collection) $collection->getSelect()->reset(Zend_Db_Select::COLUMNS)->columns('*');
-        
+
+        // ensure that we have all the data inside collections
         if ($collection instanceof Mage_Eav_Model_Entity_Collection_Abstract) $collection->addAttributeToSelect('*');
         if ($collection instanceof Mage_Core_Model_Resource_Db_Collection_Abstract) $collection->addFieldToSelect('*');
 
-        // if we have smaller collection than requested that means we can 
+        // if we have smaller collection than requested that means we can
         // switch collection to next one
         if ($collection->count() < $this->batch) $this->switchCollection = true;
 
